@@ -13,13 +13,14 @@ function partsIn(date: Date, tz: string) {
   });
   const p: Record<string, string> = {};
   for (const x of f.formatToParts(date)) p[x.type] = x.value;
+  const required = (key: string): number => {
+    const value = p[key];
+    if (value === undefined) throw new Error(`Missing date part: ${key}`);
+    return Number(value);
+  };
   return {
-    y: +p.year,
-    mo: +p.month,
-    d: +p.day,
-    h: +p.hour === 24 ? 0 : +p.hour,
-    mi: +p.minute,
-    s: +p.second,
+    y: required("year"), mo: required("month"), d: required("day"),
+    h: required("hour") % 24, mi: required("minute"), s: required("second"),
   };
 }
 
@@ -33,8 +34,8 @@ const pad = (n: number) => n.toString().padStart(2, "0");
 
 /** Local wall time (YYYY-MM-DD, HH:mm) in tz → UTC Date. */
 export function zonedToUtc(dateStr: string, timeStr: string, tz: string): Date {
-  const [y, mo, d] = dateStr.split("-").map(Number);
-  const [h, mi] = (timeStr || "00:00").split(":").map(Number);
+  const [y = NaN, mo = NaN, d = NaN] = dateStr.split("-").map(Number);
+  const [h = NaN, mi = NaN] = (timeStr || "00:00").split(":").map(Number);
   const guess = Date.UTC(y, mo - 1, d, h, mi, 0);
   const off1 = offsetMs(new Date(guess), tz);
   let t = guess - off1;
@@ -54,13 +55,13 @@ export function todayIn(tz: string, now: Date = new Date()): string {
 }
 
 export function addDays(dateStr: string, n: number): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
+  const [y = NaN, m = NaN, d = NaN] = dateStr.split("-").map(Number);
   const t = new Date(Date.UTC(y, m - 1, d + n));
   return `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`;
 }
 
 export function monthRange(month: string): { from: string; to: string; days: number } {
-  const [y, m] = month.split("-").map(Number);
+  const [y = NaN, m = NaN] = month.split("-").map(Number);
   const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
   return { from: `${month}-01`, to: `${month}-${pad(days)}`, days };
 }
@@ -76,7 +77,7 @@ export function isValidTime(s: string): boolean {
 
 const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 export function formatDateZh(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
+  const [y = NaN, m = NaN, d = NaN] = dateStr.split("-").map(Number);
   const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   return `${y}年${m}月${d}日（${WEEK[wd]}）`;
 }
