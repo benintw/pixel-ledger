@@ -26,7 +26,7 @@ function History() {
   const [categoryId, setCategoryId] = useState("");
   const [paymentId, setPaymentId] = useState("");
   const dq = useDeferredValue(q);
-  const filters = { q: dq, from: from || undefined, to: to || undefined, categoryId: categoryId || undefined, paymentId: paymentId || undefined };
+  const filters = { q: dq, from, to, categoryId, paymentId };
   const list = useQuery(txListQuery(ctx.ledger.id, ctx.ledger.timezone, filters));
   const rangeError = from && to && to < from ? "結束日期需晚於開始日期" : "";
   const items = list.data ?? [];
