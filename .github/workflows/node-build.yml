@@ -19,3 +19,12 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key'
       - name: Verify Node output
         run: test -f .output/server/index.mjs
+      - name: Build and smoke test container
+        run: |
+          docker build --build-arg VITE_SUPABASE_URL=https://example.invalid --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=test-publishable-key -t pixel-ledger-test .
+          docker run -d --name pixel-ledger-test -p 127.0.0.1:3000:3000 pixel-ledger-test
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/auth > /tmp/pixel.html; then break; fi
+            sleep 1
+          done
+          grep -q 'Pixel Ledger' /tmp/pixel.html || { docker logs pixel-ledger-test; exit 1; }
