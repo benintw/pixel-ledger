@@ -1,0 +1,30 @@
+name: Verify Node build
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  node-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
+      - name: Build Node server
+        run: bun run build
+        env:
+          PIXEL_NODE_BUILD: '1'
+          VITE_SUPABASE_URL: 'https://example.invalid'
+          VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key'
+      - name: Verify Node output
+        run: test -f .output/server/index.mjs
+      - name: Build and smoke test container
+        run: |
+          docker build --build-arg VITE_SUPABASE_URL=https://example.invalid --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=test-publishable-key -t pixel-ledger-test .
+          docker run -d --name pixel-ledger-test -p 127.0.0.1:3000:3000 pixel-ledger-test
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/auth > /tmp/pixel.html; then break; fi
+            sleep 1
+          done
+          grep -q 'Pixel Ledger' /tmp/pixel.html || { docker logs pixel-ledger-test; exit 1; }
