@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 function shiftMonth(m: string, n: number) {
-  const [y, mo] = m.split("-").map(Number);
+  const [y = NaN, mo = NaN] = m.split("-").map(Number);
   const t = new Date(Date.UTC(y, mo - 1 + n, 1));
   return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}`;
 }
