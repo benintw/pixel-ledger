@@ -14,13 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ledgers: {
+        Row: {
+          base_currency: string
+          created_at: string
+          end_date: string | null
+          id: string
+          is_default: boolean
+          name: string
+          start_date: string | null
+          timezone: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          base_currency?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          start_date?: string | null
+          timezone?: string
+          type?: string
+          user_id?: string
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          start_date?: string | null
+          timezone?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount_twd: number
+          category_id: string
+          created_at: string
+          description: string
+          exchange_rate_to_twd: number
+          id: string
+          ledger_id: string
+          notes: string | null
+          occurred_at: string
+          original_amount: number
+          original_currency: string
+          payment_method_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_twd: number
+          category_id: string
+          created_at?: string
+          description: string
+          exchange_rate_to_twd?: number
+          id?: string
+          ledger_id: string
+          notes?: string | null
+          occurred_at: string
+          original_amount: number
+          original_currency?: string
+          payment_method_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount_twd?: number
+          category_id?: string
+          created_at?: string
+          description?: string
+          exchange_rate_to_twd?: number
+          id?: string
+          ledger_id?: string
+          notes?: string | null
+          occurred_at?: string
+          original_amount?: number
+          original_currency?: string
+          payment_method_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_category_owner_fk"
+            columns: ["category_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "transactions_ledger_owner_fk"
+            columns: ["ledger_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "ledgers"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "transactions_payment_owner_fk"
+            columns: ["payment_method_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ensure_my_defaults: { Args: never; Returns: undefined }
+      ledger_report: {
+        Args: { p_from: string; p_ledger: string; p_to: string }
+        Returns: Json
+      }
+      provision_user_defaults: { Args: { _uid: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
