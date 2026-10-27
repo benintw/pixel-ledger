@@ -1,0 +1,21 @@
+name: Verify Node build
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  node-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
+      - name: Build Node server
+        run: bun run build
+        env:
+          PIXEL_NODE_BUILD: '1'
+          VITE_SUPABASE_URL: 'https://example.invalid'
+          VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key'
+      - name: Verify Node output
+        run: test -f .output/server/index.mjs
