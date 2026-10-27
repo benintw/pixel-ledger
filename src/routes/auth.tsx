@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, PixelButton } from "@/components/pixel";
-import logo from "/icons/icon-192.png?url";
+const logo = "/icons/icon-192.png";
 
 type Search = { redirect?: string };
 
