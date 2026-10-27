@@ -7,7 +7,7 @@ export function parseAmountToCents(input: string): bigint | null {
   const s = input.trim().replace(/[,，\s]/g, "");
   const m = AMOUNT_RE.exec(s);
   if (!m) return null;
-  const cents = BigInt(m[1]) * 100n + BigInt((m[2] ?? "").padEnd(2, "0"));
+  const cents = BigInt(m[1]!) * 100n + BigInt((m[2] ?? "").padEnd(2, "0"));
   if (cents <= 0n) return null;
   return cents;
 }
@@ -20,7 +20,7 @@ export function decimalToCents(dec: string | number | null | undefined): bigint 
   if (!m) throw new Error(`invalid decimal: ${s}`);
   const frac = (m[3] ?? "").padEnd(2, "0");
   if (frac.length > 2 && /[1-9]/.test(frac.slice(2))) throw new Error(`too many decimals: ${s}`);
-  const v = BigInt(m[2]) * 100n + BigInt(frac.slice(0, 2));
+  const v = BigInt(m[2]!) * 100n + BigInt(frac.slice(0, 2));
   return m[1] === "-" ? -v : v;
 }
 
