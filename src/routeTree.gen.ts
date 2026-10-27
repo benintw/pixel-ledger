@@ -15,6 +15,9 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAddRouteImport } from './routes/_authenticated/add'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedEditIdRouteImport } from './routes/_authenticated/edit.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -46,6 +49,21 @@ const AuthenticatedAddRoute = AuthenticatedAddRouteImport.update({
   path: '/add',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEditIdRoute = AuthenticatedEditIdRouteImport.update({
   id: '/edit/$id',
   path: '/edit/$id',
@@ -58,6 +76,9 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/add': typeof AuthenticatedAddRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/edit/$id': typeof AuthenticatedEditIdRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +86,9 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/add': typeof AuthenticatedAddRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/edit/$id': typeof AuthenticatedEditIdRoute
 }
@@ -75,6 +99,9 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/add': typeof AuthenticatedAddRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/edit/$id': typeof AuthenticatedEditIdRoute
 }
@@ -86,6 +113,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/add'
+    | '/history'
+    | '/reports'
+    | '/settings'
     | '/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -93,6 +123,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/add'
+    | '/history'
+    | '/reports'
+    | '/settings'
     | '/'
     | '/edit/$id'
   id:
@@ -102,6 +135,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/_authenticated/add'
+    | '/_authenticated/history'
+    | '/_authenticated/reports'
+    | '/_authenticated/settings'
     | '/_authenticated/'
     | '/_authenticated/edit/$id'
   fileRoutesById: FileRoutesById
@@ -157,6 +193,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAddRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/edit/$id': {
       id: '/_authenticated/edit/$id'
       path: '/edit/$id'
@@ -169,12 +226,18 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAddRoute: typeof AuthenticatedAddRoute
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedEditIdRoute: typeof AuthenticatedEditIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAddRoute: AuthenticatedAddRoute,
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedEditIdRoute: AuthenticatedEditIdRoute,
 }
