@@ -44,7 +44,7 @@ export function DailyBars({ days }: { days: { date: string; total: string; count
       <div className="flex h-40 items-end gap-[2px]" role="img" aria-label="每日支出長條圖">
         {days.map((d, i) => (
           <div key={d.date} className="flex h-full flex-1 flex-col justify-end" title={`${d.date}：${formatTWD(d.total)}`}>
-            {vals[i] > 0n && <div className="bar-pixel" style={{ height: `${Math.max(ratioPercent(vals[i], max), 3)}%` }} />}
+            {(vals[i] ?? 0n) > 0n && <div className="bar-pixel" style={{ height: `${Math.max(ratioPercent(vals[i] ?? 0n, max), 3)}%` }} />}
           </div>
         ))}
       </div>
