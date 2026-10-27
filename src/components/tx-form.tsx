@@ -83,7 +83,12 @@ export function TxForm({
 
   const set = <K extends keyof TxValues>(k: K, val: TxValues[K]) => {
     setV((s) => ({ ...s, [k]: val }));
-    setErrors((e) => ({ ...e, [k]: undefined, form: undefined }));
+    setErrors((e) => {
+      const next = { ...e };
+      delete next[k];
+      delete next.form;
+      return next;
+    });
   };
 
   async function submit(e: FormEvent) {

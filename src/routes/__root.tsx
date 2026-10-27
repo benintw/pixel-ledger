@@ -40,7 +40,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="pixel-box max-w-md p-6 text-center">
         <h1 className="text-xl">頁面載入失敗</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message || "請稍後再試。"}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : "請稍後再試。"}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {

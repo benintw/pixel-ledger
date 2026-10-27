@@ -36,7 +36,7 @@ function SettingsPage() {
     setTzBusy(true);
     const { error } = await supabase.from("ledgers").update({ timezone: tz }).eq("id", ctx.ledger.id);
     setTzBusy(false);
-    if (error) return toast.error(friendlyError(new Error(error.message)));
+    if (error) { toast.error(friendlyError(new Error(error.message))); return; }
     await qc.invalidateQueries();
     toast.success("時區已更新");
   }

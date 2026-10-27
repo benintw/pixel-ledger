@@ -7,9 +7,8 @@ const logo = "/icons/icon-192.png";
 type Search = { redirect?: string };
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): Search => ({
-    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): Search =>
+    typeof s["redirect"] === "string" ? { redirect: s["redirect"] } : {},
   head: () => ({
     meta: [
       { title: "登入｜Pixel Ledger" },
