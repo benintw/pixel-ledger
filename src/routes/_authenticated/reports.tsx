@@ -3,7 +3,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ctxQuery, reportQuery, txListQuery } from "@/lib/ledger-api";
-import { decimalToCents, divRoundCents, formatTWD } from "@/lib/money";
+import { decimalToCents, divRoundCents, formatMoney } from "@/lib/money";
 import { addDays, formatDateZh, monthRange, todayIn } from "@/lib/time";
 import { BreakdownList, DailyBars } from "@/components/breakdown";
 import { TxList } from "@/components/tx-list";
@@ -74,13 +74,13 @@ function Daily({ ctxId, date, setDate }: { ctxId: string; date: string; setDate:
       </Stepper>
       <section className="pixel-screen p-5">
         <p className="font-pixel text-sm">{formatDateZh(date)}</p>
-        <p className="money mt-1 text-3xl">{r.data ? formatTWD(r.data.total) : "…"}</p>
+        <p className="money mt-1 text-3xl">{r.data ? formatMoney(r.data.total, ctx.ledger.base_currency) : "…"}</p>
         <p className="font-pixel text-sm">{r.data?.count ?? 0} 筆</p>
       </section>
       {r.data && (
         <>
-          <BreakdownList title="分類" rows={r.data.by_category} total={r.data.total} />
-          <BreakdownList title="付款方式" rows={r.data.by_payment} total={r.data.total} />
+          <BreakdownList title="分類" rows={r.data.by_category} total={r.data.total} currency={ctx.ledger.base_currency} />
+          <BreakdownList title="付款方式" rows={r.data.by_payment} total={r.data.total} currency={ctx.ledger.base_currency} />
         </>
       )}
       <section className="pixel-box p-4">
@@ -92,6 +92,7 @@ function Daily({ ctxId, date, setDate }: { ctxId: string; date: string; setDate:
 }
 
 function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; setMonth: (m: string) => void }) {
+  const { data: ctx } = useSuspenseQuery(ctxQuery);
   const range = monthRange(month);
   const r = useQuery(reportQuery(ctxId, range.from, range.to));
   const avg = r.data ? divRoundCents(decimalToCents(r.data.total), range.days) : 0n;
@@ -103,19 +104,20 @@ function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; set
       </Stepper>
       <section className="pixel-screen p-5">
         <p className="font-pixel text-sm">{y}年{m}月</p>
-        <p className="money mt-1 text-3xl">{r.data ? formatTWD(r.data.total) : "…"}</p>
+        <p className="money mt-1 text-3xl">{r.data ? formatMoney(r.data.total, ctx.ledger.base_currency) : "…"}</p>
         <div className="mt-2 flex justify-between font-pixel text-sm">
           <span>{r.data?.count ?? 0} 筆</span>
-          <span>日均 {formatTWD(avg)}</span>
+          <span>日均 {formatMoney(avg, ctx.ledger.base_currency)}</span>
         </div>
       </section>
       {r.data && (
         <>
-          <DailyBars days={r.data.by_day} />
-          <BreakdownList title="分類" rows={r.data.by_category} total={r.data.total} />
-          <BreakdownList title="付款方式" rows={r.data.by_payment} total={r.data.total} />
+          <DailyBars days={r.data.by_day} currency={ctx.ledger.base_currency} />
+          <BreakdownList title="分類" rows={r.data.by_category} total={r.data.total} currency={ctx.ledger.base_currency} />
+          <BreakdownList title="付款方式" rows={r.data.by_payment} total={r.data.total} currency={ctx.ledger.base_currency} />
         </>
       )}
     </div>
   );
 }
+

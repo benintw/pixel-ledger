@@ -4,17 +4,19 @@ import { zonedToUtc, addDays } from "@/lib/time";
 
 export type Ledger = { id: string; name: string; type: string; base_currency: string; timezone: string };
 export type NamedRow = { id: string; name: string; created_at: string };
-export type LedgerCtx = { ledger: Ledger; categories: NamedRow[]; methods: NamedRow[]; email: string };
+export const ACTIVE_LEDGER_KEY = "pixel-ledger:active-ledger";
+export type LedgerCtx = { ledgers: Ledger[]; ledger: Ledger; categories: NamedRow[]; methods: NamedRow[]; email: string };
 
 export type Tx = {
   id: string;
+  ledger_id: string;
   description: string;
   category_id: string;
   payment_method_id: string;
-  amount_twd: string;
+  amount_twd: string | null;
   original_amount: string;
   original_currency: string;
-  exchange_rate_to_twd: string;
+  exchange_rate_to_twd: string | null;
   occurred_at: string;
   notes: string | null;
   created_at: string;
@@ -23,11 +25,12 @@ export type Tx = {
 
 // Cast numerics to text so money never passes through JS floats.
 export const TX_SELECT =
-  "id, description, category_id, payment_method_id, amount_twd:amount_twd::text, original_amount:original_amount::text, original_currency, exchange_rate_to_twd:exchange_rate_to_twd::text, occurred_at, notes, created_at, updated_at";
+  "id, ledger_id, description, category_id, payment_method_id, amount_twd:amount_twd::text, original_amount:original_amount::text, original_currency, exchange_rate_to_twd:exchange_rate_to_twd::text, occurred_at, notes, created_at, updated_at";
 
 export type Breakdown = { id: string; name: string; total: string; count: number };
 export type Report = {
   total: string;
+  currency?: string;
   count: number;
   by_category: Breakdown[];
   by_payment: Breakdown[];
@@ -45,14 +48,18 @@ export const ctxQuery = queryOptions({
     const r0 = await supabase.rpc("ensure_my_defaults");
     fail(r0.error);
     const [l, c, m] = await Promise.all([
-      supabase.from("ledgers").select("id,name,type,base_currency,timezone").eq("is_default", true).single(),
+      supabase.from("ledgers").select("id,name,type,base_currency,timezone,is_default").order("created_at").order("id"),
       supabase.from("categories").select("id,name,created_at").order("created_at").order("name"),
       supabase.from("payment_methods").select("id,name,created_at").order("created_at").order("name"),
     ]);
     fail(l.error);
     fail(c.error);
     fail(m.error);
-    return { ledger: l.data as Ledger, categories: c.data ?? [], methods: m.data ?? [], email: u.user?.email ?? "" };
+    const ledgers = (l.data ?? []) as (Ledger & { is_default: boolean })[];
+    const active = typeof window === "undefined" ? null : window.localStorage.getItem(ACTIVE_LEDGER_KEY);
+    const ledger = ledgers.find((row) => row.id === active) ?? ledgers.find((row) => row.is_default);
+    if (!ledger) throw new Error("找不到帳本");
+    return { ledgers, ledger, categories: c.data ?? [], methods: m.data ?? [], email: u.user?.email ?? "" };
   },
   staleTime: 60_000,
 });
@@ -140,3 +147,4 @@ export function friendlyError(e: unknown): string {
   if (/check constraint/i.test(msg)) return "資料格式不正確。";
   return "發生錯誤：" + msg;
 }
+

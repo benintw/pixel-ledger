@@ -41,7 +41,12 @@ export function zonedToUtc(dateStr: string, timeStr: string, tz: string): Date {
   let t = guess - off1;
   const off2 = offsetMs(new Date(t), tz);
   if (off2 !== off1) t = guess - off2;
-  return new Date(t);
+  const result = new Date(t);
+  const wall = partsIn(result, tz);
+  if (wall.y !== y || wall.mo !== mo || wall.d !== d || wall.h !== h || wall.mi !== mi) {
+    throw new Error("此日期時間在帳本時區不存在（可能因夏令時間跳時），請選擇其他時間。");
+  }
+  return result;
 }
 
 /** UTC instant → local {date, time} in tz. */
@@ -92,8 +97,10 @@ export const TIMEZONES = [
   "Asia/Bangkok",
   "Europe/London",
   "Europe/Paris",
+  "Europe/Berlin",
   "America/Los_Angeles",
   "America/New_York",
   "Australia/Sydney",
   "UTC",
 ];
+

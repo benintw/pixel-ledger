@@ -32,14 +32,28 @@ export function centsToDecimal(cents: bigint): string {
   return neg ? `-${s}` : s;
 }
 
-/** Display: "NT$1,234" or "NT$1,234.50". */
-export function formatTWD(value: bigint | string | number): string {
+export type Currency = "TWD" | "EUR";
+
+/** Validate supported ledger currencies; never silently relabel an unknown currency. */
+export function asCurrency(value: string): Currency {
+  if (value === "TWD" || value === "EUR") return value;
+  throw new Error("尚未支援此帳本幣別：" + value);
+}
+
+/** Format exact minor units. EUR always shows cents; TWD preserves its original display. */
+export function formatMoney(value: bigint | string | number, currency: string = "TWD"): string {
+  const code = asCurrency(currency);
   const cents = typeof value === "bigint" ? value : decimalToCents(value);
   const neg = cents < 0n;
   const a = neg ? -cents : cents;
   const int = (a / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const frac = a % 100n;
-  return `${neg ? "-" : ""}NT$${int}${frac === 0n ? "" : "." + frac.toString().padStart(2, "0")}`;
+  return `${neg ? "-" : ""}${code === "EUR" ? "€" : "NT$"}${int}${frac === 0n && code === "TWD" ? "" : "." + frac.toString().padStart(2, "0")}`;
+}
+
+/** Backwards-compatible TWD formatter. */
+export function formatTWD(value: bigint | string | number): string {
+  return formatMoney(value, "TWD");
 }
 
 /** Plain decimal for editing inputs, e.g. "1234.5" → "1234.5", "100.00" → "100". */
@@ -66,3 +80,4 @@ export function ratioPercent(part: bigint, whole: bigint): number {
   if (whole <= 0n) return 0;
   return Number((part * 1000n) / whole) / 10;
 }
+

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ctxQuery, fetchAllTx, friendlyError, type NamedRow } from "@/lib/ledger-api";
+import { ACTIVE_LEDGER_KEY, ctxQuery, fetchAllTx, friendlyError, type NamedRow } from "@/lib/ledger-api";
 import { TIMEZONES, utcToZoned } from "@/lib/time";
 import { buildCsv } from "@/lib/csv";
 import { PageHeader, PixelButton } from "@/components/pixel";
@@ -61,8 +61,8 @@ function SettingsPage() {
             { text: pm.get(t.payment_method_id) ?? "" },
             { num: t.original_amount },
             { text: t.original_currency },
-            { num: t.amount_twd },
-            { num: t.exchange_rate_to_twd },
+            t.amount_twd === null ? { text: "" } : { num: t.amount_twd },
+            t.exchange_rate_to_twd === null ? { text: "" } : { num: t.exchange_rate_to_twd },
             { text: t.notes ?? "" },
             { text: tz },
             { text: t.created_at },
@@ -91,6 +91,7 @@ function SettingsPage() {
     await qc.cancelQueries();
     qc.clear();
     window.localStorage.removeItem(LAST_PAYMENT_KEY);
+    window.localStorage.removeItem(ACTIVE_LEDGER_KEY);
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -102,6 +103,18 @@ function SettingsPage() {
         <h2 className="text-lg">帳號</h2>
         <p className="break-all text-sm">{ctx.email}</p>
         <PixelButton variant="ghost" className="w-full" onClick={signOut}>登出</PixelButton>
+      </section>
+
+      <section className="pixel-box space-y-2 p-4">
+        <h2 className="text-lg">目前帳本</h2>
+        <select aria-label="切換帳本" className="field-pixel" value={ctx.ledger.id}
+          onChange={async (e) => {
+            window.localStorage.setItem(ACTIVE_LEDGER_KEY, e.target.value);
+            await qc.invalidateQueries({ queryKey: ["ctx"] });
+          }}>
+          {ctx.ledgers.map((ledger) => <option key={ledger.id} value={ledger.id}>{ledger.name}（{ledger.base_currency}）</option>)}
+        </select>
+        <p className="text-sm text-muted-foreground">各帳本分開統計；歐元目前不換算台幣。</p>
       </section>
 
       <section className="pixel-box space-y-2 p-4">
@@ -117,7 +130,7 @@ function SettingsPage() {
 
       <section className="pixel-box space-y-2 p-4">
         <h2 className="text-lg">匯出資料</h2>
-        <p className="text-sm text-muted-foreground">CSV（UTF-8，可用 Excel 開啟）</p>
+        <p className="text-sm text-muted-foreground">目前帳本 CSV（UTF-8，可用 Excel 開啟）；未換算的台幣金額與匯率留空。</p>
         <PixelButton variant="secondary" className="w-full" disabled={exporting} onClick={exportCsv}>
           {exporting ? "匯出中…" : "下載 CSV"}
         </PixelButton>
@@ -188,3 +201,4 @@ function NameManager({ title, table, rows }: { title: string; table: "categories
     </section>
   );
 }
+

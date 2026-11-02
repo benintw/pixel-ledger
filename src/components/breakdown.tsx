@@ -1,8 +1,8 @@
-import { decimalToCents, formatTWD, ratioPercent } from "@/lib/money";
+import { decimalToCents, formatMoney, ratioPercent } from "@/lib/money";
 import type { Breakdown as B } from "@/lib/ledger-api";
 import { Empty } from "@/components/pixel";
 
-export function BreakdownList({ title, rows, total }: { title: string; rows: B[]; total: string }) {
+export function BreakdownList({ title, rows, total, currency = "TWD" }: { title: string; rows: B[]; total: string; currency?: string }) {
   const t = decimalToCents(total);
   return (
     <section className="pixel-box p-4">
@@ -20,7 +20,7 @@ export function BreakdownList({ title, rows, total }: { title: string; rows: B[]
                     {r.name} <span className="text-muted-foreground">×{r.count}</span>
                   </span>
                   <span className="money">
-                    {formatTWD(r.total)} <span className="text-xs font-normal text-muted-foreground">{pct}%</span>
+                    {formatMoney(r.total, currency)} <span className="text-xs font-normal text-muted-foreground">{pct}%</span>
                   </span>
                 </div>
                 <div className="mt-1 h-3 border-2 border-border bg-muted">
@@ -35,7 +35,7 @@ export function BreakdownList({ title, rows, total }: { title: string; rows: B[]
   );
 }
 
-export function DailyBars({ days }: { days: { date: string; total: string; count: number }[] }) {
+export function DailyBars({ days, currency = "TWD" }: { currency?: string; days: { date: string; total: string; count: number }[] }) {
   const vals = days.map((d) => decimalToCents(d.total));
   const max = vals.reduce((a, b) => (b > a ? b : a), 0n);
   return (
@@ -43,7 +43,7 @@ export function DailyBars({ days }: { days: { date: string; total: string; count
       <h2 className="mb-3 text-lg">每日支出</h2>
       <div className="flex h-40 items-end gap-[2px]" role="img" aria-label="每日支出長條圖">
         {days.map((d, i) => (
-          <div key={d.date} className="flex h-full flex-1 flex-col justify-end" title={`${d.date}：${formatTWD(d.total)}`}>
+          <div key={d.date} className="flex h-full flex-1 flex-col justify-end" title={`${d.date}：${formatMoney(d.total, currency)}`}>
             {(vals[i] ?? 0n) > 0n && <div className="bar-pixel" style={{ height: `${Math.max(ratioPercent(vals[i] ?? 0n, max), 3)}%` }} />}
           </div>
         ))}
@@ -56,3 +56,4 @@ export function DailyBars({ days }: { days: { date: string; total: string; count
     </section>
   );
 }
+

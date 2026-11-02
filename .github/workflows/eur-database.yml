@@ -1,0 +1,36 @@
+name: EUR database and import tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: test-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: test-only
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Apply schema and verify TWD migration compatibility
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/db/bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f drizzle/migrations/0000_pixel_ledger_m0.sql
+          psql -v ON_ERROR_STOP=1 -f tests/db/before_eur.sql
+          psql -v ON_ERROR_STOP=1 -f drizzle/migrations/0001_eur_ledgers.sql
+          psql -v ON_ERROR_STOP=1 -f tests/db/eur.sql
+      - name: Test XLSX parsing and real PostgreSQL import replay
+        run: uv run --python 3.12 --with pytest==8.4.2 pytest tests/test_import_expenses.py -q
