@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, PixelButton } from "@/components/pixel";
-import { centsToDecimal, parseAmountToCents } from "@/lib/money";
+import { asCurrency, centsToDecimal, parseAmountToCents } from "@/lib/money";
 import { isValidDate, isValidTime, zonedToUtc } from "@/lib/time";
 import { friendlyError, type LedgerCtx } from "@/lib/ledger-api";
 
@@ -101,14 +101,15 @@ export function TxForm({
     setBusy(true);
     try {
       const amount = centsToDecimal(parseAmountToCents(v.amount)!);
+      const currency = asCurrency(ctx.ledger.base_currency);
       const row = {
         description: v.description.trim(),
         category_id: v.categoryId,
         payment_method_id: v.paymentId,
         original_amount: amount as unknown as number,
-        original_currency: "TWD",
-        amount_twd: amount as unknown as number,
-        exchange_rate_to_twd: 1,
+        original_currency: currency,
+        amount_twd: currency === "TWD" ? amount as unknown as number : null,
+        exchange_rate_to_twd: currency === "TWD" ? 1 : null,
         occurred_at: zonedToUtc(v.date, v.time, ctx.ledger.timezone).toISOString(),
         notes: v.notes.trim() || null,
       };
@@ -117,7 +118,12 @@ export function TxForm({
         const { error } = await supabase
           .from("transactions")
           .insert({ ...row, id: txId, ledger_id: ctx.ledger.id });
-        if (error && error.code !== "23505") throw new Error(error.message);
+        if (error) {
+          if (error.code !== "23505") throw new Error(error.message);
+          const existing = await supabase.from("transactions").select("id").eq("id", txId).single();
+          if (existing.error || !existing.data) throw new Error(error.message);
+          // The same client-generated transaction was already saved by an earlier retry.
+        }
         window.localStorage.setItem(LAST_PAYMENT_KEY, v.paymentId);
       } else {
         const { error, count } = await supabase
@@ -157,9 +163,9 @@ export function TxForm({
         />
       </Field>
 
-      <Field label="金額（TWD）" htmlFor="amount" error={errors.amount}>
+      <Field label={`金額（${ctx.ledger.base_currency}）`} htmlFor="amount" error={errors.amount}>
         <div className="flex items-stretch">
-          <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">NT$</span>
+          <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">{ctx.ledger.base_currency === "EUR" ? "€" : "NT$"}</span>
           <input
             id="amount"
             className="field-pixel money text-xl"
@@ -219,3 +225,4 @@ export function TxForm({
     </form>
   );
 }
+

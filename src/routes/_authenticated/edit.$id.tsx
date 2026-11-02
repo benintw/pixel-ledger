@@ -49,10 +49,13 @@ function EditPage() {
       </div>
     );
   }
-  const local = utcToZoned(tx.occurred_at, ctx.ledger.timezone);
+  const ledger = ctx.ledgers.find((row) => row.id === tx.ledger_id);
+  if (!ledger) return <p className="pt-8">找不到這筆紀錄的帳本，請重新整理。</p>;
+  const txCtx = { ...ctx, ledger };
+  const local = utcToZoned(tx.occurred_at, ledger.timezone);
   const initial = {
     description: tx.description,
-    amount: centsToInput(decimalToCents(tx.amount_twd)),
+    amount: centsToInput(decimalToCents(tx.original_amount)),
     date: local.date,
     time: local.time,
     categoryId: tx.category_id,
@@ -81,7 +84,7 @@ function EditPage() {
       <div className="pixel-box p-4">
         <TxForm
           key={tx.updated_at}
-          ctx={ctx}
+          ctx={txCtx}
           initial={initial}
           txId={id}
           mode="edit"
@@ -110,3 +113,4 @@ function EditPage() {
     </div>
   );
 }
+

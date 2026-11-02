@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { formatTWD } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { utcToZoned } from "@/lib/time";
 import type { LedgerCtx, Tx } from "@/lib/ledger-api";
 import { Empty } from "@/components/pixel";
@@ -22,7 +22,7 @@ export function TxList({ ctx, items, showDate = true, empty = "還沒有紀錄" 
                   {local.time}・{cat.get(t.category_id) ?? "—"}・{pm.get(t.payment_method_id) ?? "—"}
                 </p>
               </div>
-              <span className="money shrink-0">{formatTWD(t.amount_twd)}</span>
+              <span className="money shrink-0">{formatMoney(t.original_amount, t.original_currency)}</span>
             </Link>
           </li>
         );
@@ -30,3 +30,4 @@ export function TxList({ ctx, items, showDate = true, empty = "還沒有紀錄" 
     </ul>
   );
 }
+

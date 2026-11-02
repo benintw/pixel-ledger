@@ -97,11 +97,11 @@ export type Database = {
       }
       transactions: {
         Row: {
-          amount_twd: number
+          amount_twd: number | null
           category_id: string
           created_at: string
           description: string
-          exchange_rate_to_twd: number
+          exchange_rate_to_twd: number | null
           id: string
           ledger_id: string
           notes: string | null
@@ -113,11 +113,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          amount_twd: number
+          amount_twd: number | null
           category_id: string
           created_at?: string
           description: string
-          exchange_rate_to_twd?: number
+          exchange_rate_to_twd?: number | null
           id?: string
           ledger_id: string
           notes?: string | null
@@ -129,11 +129,11 @@ export type Database = {
           user_id?: string
         }
         Update: {
-          amount_twd?: number
+          amount_twd?: number | null
           category_id?: string
           created_at?: string
           description?: string
-          exchange_rate_to_twd?: number
+          exchange_rate_to_twd?: number | null
           id?: string
           ledger_id?: string
           notes?: string | null
@@ -311,3 +311,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

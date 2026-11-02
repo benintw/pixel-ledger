@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 import { ctxQuery, txListQuery } from "@/lib/ledger-api";
-import { formatTWD, sumCents } from "@/lib/money";
+import { formatMoney, sumCents } from "@/lib/money";
 import { TxList } from "@/components/tx-list";
 import { Field, PageHeader, PixelButton } from "@/components/pixel";
 
@@ -61,10 +61,11 @@ function History() {
       <section className="pixel-box p-4">
         <div className="mb-1 flex justify-between font-pixel text-sm">
           <span>{items.length} 筆{items.length >= 500 ? "（顯示前 500 筆）" : ""}</span>
-          <span className="money">{formatTWD(sumCents(items.map((t) => t.amount_twd)))}</span>
+          <span className="money">{formatMoney(sumCents(items.map((t) => t.original_amount)), ctx.ledger.base_currency)}</span>
         </div>
         {list.isLoading ? <p className="py-4 text-sm">讀取中…</p> : list.error ? <p className="text-destructive">讀取失敗</p> : <TxList ctx={ctx} items={items} empty="沒有符合的紀錄" />}
       </section>
     </div>
   );
 }
+

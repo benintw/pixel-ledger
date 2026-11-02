@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { ctxQuery, reportQuery, txListQuery } from "@/lib/ledger-api";
-import { formatTWD } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { formatDateZh, monthRange, todayIn } from "@/lib/time";
 import { TxList } from "@/components/tx-list";
 import { useNow } from "@/hooks/use-now";
@@ -32,7 +32,7 @@ function Today() {
     <div className="space-y-5 pt-4">
       <header className="flex items-center justify-between">
         <div>
-          <p className="font-pixel text-sm text-muted-foreground">{ctx.ledger.name}</p>
+          <p className="font-pixel text-sm text-muted-foreground">{ctx.ledger.name}・{ctx.ledger.base_currency}</p>
           <h1 className="text-xl">{formatDateZh(today)}</h1>
         </div>
         <img src="/icons/icon-192.png" alt="" width={44} height={44} className="border-[3px] border-border" />
@@ -40,10 +40,10 @@ function Today() {
 
       <section className="pixel-screen p-5" aria-live="polite">
         <p className="font-pixel text-sm">今日支出</p>
-        <p className="money mt-1 text-4xl">{day.data ? formatTWD(day.data.total) : "…"}</p>
+        <p className="money mt-1 text-4xl">{day.data ? formatMoney(day.data.total, ctx.ledger.base_currency) : "…"}</p>
         <div className="mt-3 flex justify-between font-pixel text-sm">
           <span>{day.data ? `${day.data.count} 筆` : ""}</span>
-          <span>本月 {mon.data ? formatTWD(mon.data.total) : "…"}</span>
+          <span>本月 {mon.data ? formatMoney(mon.data.total, ctx.ledger.base_currency) : "…"}</span>
         </div>
         {(day.error || mon.error) && <p className="mt-2 text-sm text-destructive">讀取失敗，請重新整理。</p>}
       </section>
@@ -62,3 +62,4 @@ function Today() {
     </div>
   );
 }
+
