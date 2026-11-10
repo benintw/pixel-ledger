@@ -35,6 +35,26 @@ function SettingsPage() {
   const [rateInput, setRateInput] = useState("");
   const tzOptions = TIMEZONES.includes(ctx.ledger.timezone) ? TIMEZONES : [ctx.ledger.timezone, ...TIMEZONES];
 
+  const [deletingLedger, setDeletingLedger] = useState(false);
+
+  async function deleteLedger() {
+    if (deletingLedger) return;
+    const { id, name } = ctx.ledger;
+    if (!window.confirm(`確定刪除空帳本「${name}」？這個操作無法復原。`)) return;
+    setDeletingLedger(true);
+    try {
+      const { data, error } = await supabase.from("ledgers").delete().eq("id", id)
+        .eq("is_default", false).select("id").maybeSingle();
+      if (error?.code === "23503") { toast.error("帳本已有記帳紀錄，不能刪除。"); return; }
+      if (error) throw new Error(error.message);
+      if (!data) { toast.error("找不到帳本，或此帳本不能刪除。"); return; }
+      if (window.localStorage.getItem(ACTIVE_LEDGER_KEY) === id) window.localStorage.removeItem(ACTIVE_LEDGER_KEY);
+      await qc.invalidateQueries({ queryKey: ["ctx"] });
+      toast.success("空帳本已刪除");
+    } catch (error) { toast.error(friendlyError(error)); }
+    finally { setDeletingLedger(false); }
+  }
+
   async function changeTz(tz: string) {
     if (tz === ctx.ledger.timezone) return;
     if (!window.confirm(`將「${ctx.ledger.name}」時區改為 ${tz}？所有每日／每月統計會依新時區重新計算。`)) return;
@@ -153,6 +173,7 @@ function SettingsPage() {
           {ctx.ledgers.map((ledger) => <option key={ledger.id} value={ledger.id}>{ledger.name}（{ledger.base_currency}）</option>)}
         </select>
         <p className="text-sm text-muted-foreground">各帳本分開統計；歐元不換算台幣，韓元使用手動匯率。</p>
+        {"is_default" in ctx.ledger && ctx.ledger.is_default === false && <PixelButton variant="danger" className="w-full" disabled={deletingLedger} onClick={deleteLedger}>{deletingLedger ? "刪除中…" : "刪除目前空帳本"}</PixelButton>}
       </section>
 
       {ctx.ledger.base_currency === "KRW" && <section className="pixel-box space-y-2 p-4">
