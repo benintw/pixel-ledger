@@ -30,25 +30,26 @@ function shiftMonth(m: string, n: number) {
 function Reports() {
   const { data: ctx } = useSuspenseQuery(ctxQuery);
   const today = todayIn(ctx.ledger.timezone);
-  const [tab, setTab] = useState<"daily" | "monthly">("daily");
+  const [tab, setTab] = useState<"daily" | "monthly" | "yearly">("daily");
   const [date, setDate] = useState(today);
+  const [year, setYear] = useState(Number(today.slice(0, 4)));
   const [month, setMonth] = useState(today.slice(0, 7));
 
   return (
     <div className="pt-4">
       <PageHeader title="報表" />
-      <div className="mb-4 grid grid-cols-2 gap-2" role="tablist">
-        {(["daily", "monthly"] as const).map((t) => (
+      <div className="mb-4 grid grid-cols-3 gap-2" role="tablist">
+        {(["daily", "monthly", "yearly"] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} aria-pressed={tab === t} className="chip-pixel font-pixel" onClick={() => setTab(t)}>
-            {t === "daily" ? "日報" : "月報"}
+            {t === "daily" ? "日報" : t === "monthly" ? "月報" : "年報"}
           </button>
         ))}
       </div>
       {tab === "daily" ? (
         <Daily ctxId={ctx.ledger.id} date={date} setDate={setDate} />
-      ) : (
+      ) : tab === "monthly" ? (
         <Monthly ctxId={ctx.ledger.id} month={month} setMonth={setMonth} />
-      )}
+      ) : <Yearly year={year} setYear={setYear} />}
     </div>
   );
 }
@@ -109,7 +110,7 @@ function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; set
         {ctx.ledger.base_currency === "KRW" && r.data?.total_twd != null && <p className="text-sm">約 {formatMoney(r.data.total_twd, "TWD")}（各筆匯率加總）</p>}
         <div className="mt-2 flex justify-between font-pixel text-sm">
           <span>{r.data?.count ?? 0} 筆</span>
-          <span>日均 {formatMoney(avg, ctx.ledger.base_currency)}</span>
+          <span>每日平均 {formatMoney(avg, ctx.ledger.base_currency)}</span>
         </div>
       </section>
       {r.data && (
@@ -124,3 +125,42 @@ function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; set
 }
 
 
+
+function Yearly({ year, setYear }: { year: number; setYear: (year: number) => void }) {
+  const { data: ctx } = useSuspenseQuery(ctxQuery);
+  const today = todayIn(ctx.ledger.timezone);
+  const currentYear = Number(today.slice(0, 4));
+  const from = `${year}-01-01`;
+  const to = year === currentYear ? today : `${year}-12-31`;
+  const months = year === currentYear ? Number(today.slice(5, 7)) : 12;
+  const days = Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1;
+  const { data, error } = useQuery(reportQuery(ctx.ledger.id, from, to));
+  const currency = ctx.ledger.base_currency;
+  const totals = Array.from({ length: months }, () => 0n);
+  for (const day of data?.by_day ?? []) {
+    const index = Number(day.date.slice(5, 7)) - 1;
+    totals[index] = (totals[index] ?? 0n) + decimalToCents(day.total);
+  }
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <button className="btn-pixel btn-ghost" disabled={year <= 1900} onClick={() => setYear(year - 1)}>上一年</button>
+        <span>{year} 年</span>
+        <button className="btn-pixel btn-ghost" disabled={year >= currentYear} onClick={() => setYear(year + 1)}>下一年</button>
+      </div>
+      <section className="pixel-screen p-5">
+        <p>{year === currentYear ? "今年截至今日總支出" : "全年總支出"}</p>
+        {data ? <>
+          <p className="money text-3xl">{formatMoney(data.total, currency)}</p>
+          {currency === "KRW" && data.total_twd != null && <p>約 {formatMoney(data.total_twd, "TWD")}</p>}
+          <p>{data.count} 筆</p>
+          <p>每月平均 {formatMoney(divRoundCents(decimalToCents(data.total), months), currency)}（除以 {months} 個月）</p>
+          <p>每日平均 {formatMoney(divRoundCents(decimalToCents(data.total), days), currency)}（除以 {days} 天）</p>
+        </> : <p>{error ? "讀取失敗" : "讀取中…"}</p>}
+      </section>
+      {data && <section className="pixel-box p-4"><h2>各月支出</h2><ul className="divide-y">
+        {totals.map((total, i) => <li key={i} className="flex justify-between py-2"><span>{i + 1} 月</span><span className="money">{formatMoney(total, currency)}</span></li>)}
+      </ul></section>}
+    </div>
+  );
+}
