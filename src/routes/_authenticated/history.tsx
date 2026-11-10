@@ -38,6 +38,7 @@ function History() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const ids = items.filter((item) => selected.has(item.id)).map((item) => item.id);
+  function resetSelection() { setSelected(new Set()); }
   async function deleteSelected() {
     if (busy || !ids.length || !window.confirm(`確定永久刪除這 ${ids.length} 筆紀錄？`)) return;
     setBusy(true);
@@ -57,26 +58,26 @@ function History() {
     <div className="pt-4">
       <PageHeader title="紀錄" />
       <div className="pixel-box mb-4 space-y-3 p-4">
-        <input type="search" className="field-pixel" placeholder="搜尋說明或備註" value={q} onChange={(e) => setQ(e.target.value)} aria-label="搜尋" />
+        <input type="search" className="field-pixel" placeholder="搜尋說明或備註" value={q} onChange={(e) => { resetSelection(); setQ(e.target.value); }} aria-label="搜尋" />
         <div className="grid grid-cols-2 gap-3">
-          <Field label="從" htmlFor="from"><input id="from" type="date" className="field-pixel" value={from} onChange={(e) => setFrom(e.target.value)} /></Field>
-          <Field label="到" htmlFor="to" error={rangeError}><input id="to" type="date" className="field-pixel" value={to} onChange={(e) => setTo(e.target.value)} /></Field>
+          <Field label="從" htmlFor="from"><input id="from" type="date" className="field-pixel" value={from} onChange={(e) => { resetSelection(); setFrom(e.target.value); }} /></Field>
+          <Field label="到" htmlFor="to" error={rangeError}><input id="to" type="date" className="field-pixel" value={to} onChange={(e) => { resetSelection(); setTo(e.target.value); }} /></Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="分類" htmlFor="cat">
-            <select id="cat" className="field-pixel" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <select id="cat" className="field-pixel" value={categoryId} onChange={(e) => { resetSelection(); setCategoryId(e.target.value); }}>
               <option value="">全部</option>
               {ctx.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </Field>
           <Field label="付款" htmlFor="pm">
-            <select id="pm" className="field-pixel" value={paymentId} onChange={(e) => setPaymentId(e.target.value)}>
+            <select id="pm" className="field-pixel" value={paymentId} onChange={(e) => { resetSelection(); setPaymentId(e.target.value); }}>
               <option value="">全部</option>
               {ctx.methods.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </Field>
         </div>
-        <PixelButton variant="ghost" className="w-full" onClick={() => { setQ(""); setFrom(""); setTo(""); setCategoryId(""); setPaymentId(""); }}>
+        <PixelButton variant="ghost" className="w-full" onClick={() => { resetSelection(); setQ(""); setFrom(""); setTo(""); setCategoryId(""); setPaymentId(""); }}>
           清除篩選
         </PixelButton>
       </div>
@@ -89,7 +90,7 @@ function History() {
           <PixelButton variant="ghost" disabled={busy} onClick={() => { setSelecting(!selecting); setSelected(new Set()); }}>{selecting ? "取消選取" : "選取紀錄"}</PixelButton>
           {selecting && <PixelButton variant="danger" disabled={busy || !ids.length} onClick={deleteSelected}>刪除選取（{ids.length}/50）</PixelButton>}
         </div>
-        {list.isLoading ? <p className="py-4 text-sm">讀取中…</p> : list.error ? <p className="text-destructive">讀取失敗</p> : selecting ? <ul className="divide-y">{items.map((item) => <li key={item.id}><label className="flex min-h-12 items-center gap-3 py-2"><input type="checkbox" disabled={busy || (ids.length >= 50 && !selected.has(item.id))} checked={selected.has(item.id)} onChange={(e) => { const next = new Set(selected); if (e.target.checked) next.add(item.id); else next.delete(item.id); setSelected(next); }} /><span className="min-w-0 flex-1 break-words">{item.description}<small className="block text-muted-foreground">{utcToZoned(item.occurred_at, ctx.ledger.timezone).date} {utcToZoned(item.occurred_at, ctx.ledger.timezone).time}</small></span><span className="money">{formatMoney(item.original_amount, ctx.ledger.base_currency)}</span></label></li>)}</ul> : <TxList ctx={ctx} items={items} empty="沒有符合的紀錄" />}
+        {list.isLoading ? <p className="py-4 text-sm">讀取中…</p> : list.error ? <p className="text-destructive">讀取失敗</p> : selecting ? <ul className="divide-y">{items.map((item) => <li key={item.id}><label className="flex min-h-12 items-center gap-3 py-2"><input type="checkbox" disabled={busy || (selected.size >= 50 && !selected.has(item.id))} checked={selected.has(item.id)} onChange={(e) => { const next = new Set(selected); if (e.target.checked) next.add(item.id); else next.delete(item.id); setSelected(next); }} /><span className="min-w-0 flex-1 break-words">{item.description}<small className="block text-muted-foreground">{utcToZoned(item.occurred_at, ctx.ledger.timezone).date} {utcToZoned(item.occurred_at, ctx.ledger.timezone).time}</small></span><span className="money">{formatMoney(item.original_amount, ctx.ledger.base_currency)}</span></label></li>)}</ul> : <TxList ctx={ctx} items={items} empty="沒有符合的紀錄" />}
       </section>
     </div>
   );
