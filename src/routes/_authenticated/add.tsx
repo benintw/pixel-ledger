@@ -37,10 +37,11 @@ function AddPage() {
   });
   return (
     <div className="pt-4">
-      <PageHeader title="記一筆" sub={`${ctx.ledger.name}・TWD`} />
+      <PageHeader title="記一筆" sub={`${ctx.ledger.name}・${ctx.ledger.base_currency}`} />
       <div className="pixel-box p-4">
         <TxForm ctx={ctx} initial={initial} txId={txId} mode="create" onDone={() => navigate({ to: "/" })} />
       </div>
     </div>
   );
 }
+

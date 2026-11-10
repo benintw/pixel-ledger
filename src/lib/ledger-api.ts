@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { zonedToUtc, addDays } from "@/lib/time";
 
-export type Ledger = { id: string; name: string; type: string; base_currency: string; timezone: string };
+export type Ledger = { id: string; name: string; type: string; base_currency: string; timezone: string; default_exchange_rate_to_twd?: string | null };
 export type NamedRow = { id: string; name: string; created_at: string };
 export const ACTIVE_LEDGER_KEY = "pixel-ledger:active-ledger";
 export type LedgerCtx = { ledgers: Ledger[]; ledger: Ledger; categories: NamedRow[]; methods: NamedRow[]; email: string };
@@ -31,6 +31,7 @@ export type Breakdown = { id: string; name: string; total: string; count: number
 export type Report = {
   total: string;
   currency?: string;
+  total_twd?: string | null;
   count: number;
   by_category: Breakdown[];
   by_payment: Breakdown[];
@@ -48,7 +49,7 @@ export const ctxQuery = queryOptions({
     const r0 = await supabase.rpc("ensure_my_defaults");
     fail(r0.error);
     const [l, c, m] = await Promise.all([
-      supabase.from("ledgers").select("id,name,type,base_currency,timezone,is_default").order("created_at").order("id"),
+      supabase.from("ledgers").select("id,name,type,base_currency,timezone,default_exchange_rate_to_twd:default_exchange_rate_to_twd::text,is_default").order("created_at").order("id"),
       supabase.from("categories").select("id,name,created_at").order("created_at").order("name"),
       supabase.from("payment_methods").select("id,name,created_at").order("created_at").order("name"),
     ]);
@@ -73,6 +74,15 @@ export const reportQuery = (ledgerId: string, from: string, to: string) =>
       return data as unknown as Report;
     },
   });
+
+export const ledgerTotalQuery = (ledgerId: string) => queryOptions({
+  queryKey: ["ledger-total", ledgerId],
+  queryFn: async (): Promise<{ total: string; total_twd: string | null; count: number }> => {
+    const { data, error } = await supabase.rpc("ledger_total", { p_ledger: ledgerId });
+    fail(error);
+    return data as unknown as { total: string; total_twd: string | null; count: number };
+  },
+});
 
 export type TxFilters = {
   q?: string;
@@ -147,4 +157,5 @@ export function friendlyError(e: unknown): string {
   if (/check constraint/i.test(msg)) return "資料格式不正確。";
   return "發生錯誤：" + msg;
 }
+
 

@@ -73,7 +73,7 @@ function EditPage() {
       return;
     }
     qc.removeQueries({ queryKey: ["tx-one", id] });
-    await Promise.all([qc.invalidateQueries({ queryKey: ["report"] }), qc.invalidateQueries({ queryKey: ["tx"] })]);
+    await Promise.all([qc.invalidateQueries({ queryKey: ["report"] }), qc.invalidateQueries({ queryKey: ["ledger-total"] }), qc.invalidateQueries({ queryKey: ["tx"] })]);
     toast.success("已刪除");
     navigate({ to: "/history", replace: true });
   }
@@ -113,4 +113,5 @@ function EditPage() {
     </div>
   );
 }
+
 

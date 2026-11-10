@@ -75,6 +75,7 @@ function Daily({ ctxId, date, setDate }: { ctxId: string; date: string; setDate:
       <section className="pixel-screen p-5">
         <p className="font-pixel text-sm">{formatDateZh(date)}</p>
         <p className="money mt-1 text-3xl">{r.data ? formatMoney(r.data.total, ctx.ledger.base_currency) : "…"}</p>
+        {ctx.ledger.base_currency === "KRW" && r.data?.total_twd != null && <p className="text-sm">約 {formatMoney(r.data.total_twd, "TWD")}（各筆匯率加總）</p>}
         <p className="font-pixel text-sm">{r.data?.count ?? 0} 筆</p>
       </section>
       {r.data && (
@@ -105,6 +106,7 @@ function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; set
       <section className="pixel-screen p-5">
         <p className="font-pixel text-sm">{y}年{m}月</p>
         <p className="money mt-1 text-3xl">{r.data ? formatMoney(r.data.total, ctx.ledger.base_currency) : "…"}</p>
+        {ctx.ledger.base_currency === "KRW" && r.data?.total_twd != null && <p className="text-sm">約 {formatMoney(r.data.total_twd, "TWD")}（各筆匯率加總）</p>}
         <div className="mt-2 flex justify-between font-pixel text-sm">
           <span>{r.data?.count ?? 0} 筆</span>
           <span>日均 {formatMoney(avg, ctx.ledger.base_currency)}</span>
@@ -120,4 +122,5 @@ function Monthly({ ctxId, month, setMonth }: { ctxId: string; month: string; set
     </div>
   );
 }
+
 

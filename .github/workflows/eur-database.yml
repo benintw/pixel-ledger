@@ -32,5 +32,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/db/before_eur.sql
           psql -v ON_ERROR_STOP=1 -f drizzle/migrations/0001_eur_ledgers.sql
           psql -v ON_ERROR_STOP=1 -f tests/db/eur.sql
+          psql -v ON_ERROR_STOP=1 -f drizzle/migrations/0002_krw_travel.sql
+          psql -v ON_ERROR_STOP=1 -f tests/db/krw.sql
       - name: Test XLSX parsing and real PostgreSQL import replay
         run: uv run --python 3.12 --with pytest==8.4.2 pytest tests/test_import_expenses.py -q
