@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACTIVE_LEDGER_KEY, ctxQuery, fetchAllTx, friendlyError, type NamedRow } from "@/lib/ledger-api";
 import { TIMEZONES, utcToZoned } from "@/lib/time";
 import { buildCsv } from "@/lib/csv";
+import { isValidKrwRate } from "@/lib/money";
 import { PageHeader, PixelButton } from "@/components/pixel";
 import { LAST_PAYMENT_KEY } from "@/components/tx-form";
 
@@ -28,6 +29,10 @@ function SettingsPage() {
   const navigate = useNavigate();
   const [tzBusy, setTzBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [tripName, setTripName] = useState("韓國旅遊");
+  const [newRate, setNewRate] = useState("");
+  const [rateBusy, setRateBusy] = useState(false);
+  const [rateInput, setRateInput] = useState("");
   const tzOptions = TIMEZONES.includes(ctx.ledger.timezone) ? TIMEZONES : [ctx.ledger.timezone, ...TIMEZONES];
 
   async function changeTz(tz: string) {
@@ -39,6 +44,39 @@ function SettingsPage() {
     if (error) { toast.error(friendlyError(new Error(error.message))); return; }
     await qc.invalidateQueries();
     toast.success("時區已更新");
+  }
+
+  async function createKoreaLedger() {
+    const name = tripName.trim();
+    const rate = newRate.trim();
+    if (!name || name.length > 50 || !isValidKrwRate(rate)) { toast.error("請輸入帳本名稱和有效匯率，最多 10 位小數。"); return; }
+    if (ctx.ledgers.some((ledger) => ledger.name === name)) { toast.error("帳本名稱已存在。"); return; }
+    if (rateBusy) return;
+    setRateBusy(true);
+    try {
+      const { data, error } = await supabase.from("ledgers").insert({ name, type: "travel", base_currency: "KRW", timezone: "Asia/Seoul", default_exchange_rate_to_twd: rate as unknown as number }).select("id").single();
+      if (error) throw new Error(error.message);
+      window.localStorage.setItem(ACTIVE_LEDGER_KEY, data.id);
+      await qc.invalidateQueries({ queryKey: ["ctx"] });
+      setNewRate("");
+      toast.success("韓國旅遊帳本已建立並切換");
+    } catch (error) { toast.error(friendlyError(error)); }
+    finally { setRateBusy(false); }
+  }
+
+  async function updateRate() {
+    const rate = rateInput.trim();
+    if (!isValidKrwRate(rate)) { toast.error("請輸入大於 0 且最多 10 位小數的匯率。"); return; }
+    if (rateBusy) return;
+    setRateBusy(true);
+    try {
+      const { error } = await supabase.from("ledgers").update({ default_exchange_rate_to_twd: rate as unknown as number }).eq("id", ctx.ledger.id);
+      if (error) throw new Error(error.message);
+      await qc.invalidateQueries({ queryKey: ["ctx"] });
+      setRateInput("");
+      toast.success("匯率已更新，既有紀錄不變");
+    } catch (error) { toast.error(friendlyError(error)); }
+    finally { setRateBusy(false); }
   }
 
   async function exportCsv() {
@@ -114,9 +152,24 @@ function SettingsPage() {
           }}>
           {ctx.ledgers.map((ledger) => <option key={ledger.id} value={ledger.id}>{ledger.name}（{ledger.base_currency}）</option>)}
         </select>
-        <p className="text-sm text-muted-foreground">各帳本分開統計；歐元目前不換算台幣。</p>
+        <p className="text-sm text-muted-foreground">各帳本分開統計；歐元不換算台幣，韓元使用手動匯率。</p>
       </section>
 
+      {ctx.ledger.base_currency === "KRW" && <section className="pixel-box space-y-2 p-4">
+        <h2 className="text-lg">韓元匯率</h2>
+        <p className="text-sm">目前：1 KRW = {ctx.ledger.default_exchange_rate_to_twd ?? "未設定"} TWD</p>
+        <p className="text-sm text-muted-foreground">修改只影響新紀錄。既有紀錄保留原匯率；台幣金額為估算。</p>
+        <input aria-label="新匯率：1 韓元等於多少台幣" className="field-pixel" type="text" inputMode="decimal" placeholder="輸入 1 韓元等於多少台幣" value={rateInput} onChange={(e) => setRateInput(e.target.value)} />
+        <PixelButton className="w-full" disabled={rateBusy} onClick={updateRate}>更新匯率</PixelButton>
+      </section>}
+      <section className="pixel-box space-y-2 p-4">
+        <h2 className="text-lg">建立韓國旅遊帳本</h2>
+        <input aria-label="旅遊帳本名稱" className="field-pixel" maxLength={50} value={tripName} onChange={(e) => setTripName(e.target.value)} />
+        <label htmlFor="new-trip-rate" className="block text-sm">手動匯率：1 韓元（KRW）等於多少台幣（TWD）？</label>
+        <input id="new-trip-rate" className="field-pixel" type="text" inputMode="decimal" placeholder="例如 0.024（僅示意）" value={newRate} onChange={(e) => setNewRate(e.target.value)} />
+        <p className="text-sm text-muted-foreground">例如輸入 0.024，₩10,000 約 NT$240。請依你的實際匯率填寫。</p>
+        <PixelButton className="w-full" disabled={rateBusy} onClick={createKoreaLedger}>建立並切換</PixelButton>
+      </section>
       <section className="pixel-box space-y-2 p-4">
         <h2 className="text-lg">帳本時區</h2>
         <p className="text-sm text-muted-foreground">{ctx.ledger.name}・{ctx.ledger.base_currency}</p>
@@ -201,4 +254,5 @@ function NameManager({ title, table, rows }: { title: string; table: "categories
     </section>
   );
 }
+
 

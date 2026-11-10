@@ -95,6 +95,8 @@ export function TxForm({
     e.preventDefault();
     if (busyRef.current) return; // duplicate-submit guard
     const errs = validateTx(v);
+    if (ctx.ledger.base_currency === "KRW" && parseAmountToCents(v.amount) !== null && parseAmountToCents(v.amount)! % 100n !== 0n) errs.amount = "韓元金額請輸入整數。";
+    if (ctx.ledger.base_currency === "KRW" && mode === "create" && !ctx.ledger.default_exchange_rate_to_twd) errs.form = "請先至設定填入韓元匯率。";
     setErrors(errs);
     if (Object.keys(errs).length) return;
     busyRef.current = true;
@@ -136,6 +138,7 @@ export function TxForm({
       savedRef.current = true;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["report"] }),
+        qc.invalidateQueries({ queryKey: ["ledger-total"] }),
         qc.invalidateQueries({ queryKey: ["tx"] }),
         qc.invalidateQueries({ queryKey: ["tx-one", txId] }),
       ]);
@@ -165,11 +168,11 @@ export function TxForm({
 
       <Field label={`金額（${ctx.ledger.base_currency}）`} htmlFor="amount" error={errors.amount}>
         <div className="flex items-stretch">
-          <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">{ctx.ledger.base_currency === "EUR" ? "€" : "NT$"}</span>
+          <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">{ctx.ledger.base_currency === "EUR" ? "€" : ctx.ledger.base_currency === "KRW" ? "₩" : "NT$"}</span>
           <input
             id="amount"
             className="field-pixel money text-xl"
-            inputMode="decimal"
+            inputMode={ctx.ledger.base_currency === "KRW" ? "numeric" : "decimal"}
             autoComplete="off"
             placeholder="0"
             value={v.amount}
@@ -179,6 +182,7 @@ export function TxForm({
         </div>
       </Field>
 
+      {ctx.ledger.base_currency === "KRW" && <p className="text-sm text-muted-foreground">{mode === "create" ? `匯率：1 KRW = ${ctx.ledger.default_exchange_rate_to_twd ?? "未設定"} TWD` : "編輯時保留這筆紀錄原有的匯率。"}</p>}
       <div className="grid grid-cols-2 gap-3">
         <Field label="日期" htmlFor="date" error={errors.date}>
           <input id="date" type="date" className="field-pixel" value={v.date} aria-invalid={!!errors.date} onChange={(e) => set("date", e.target.value)} />
@@ -225,4 +229,5 @@ export function TxForm({
     </form>
   );
 }
+
 

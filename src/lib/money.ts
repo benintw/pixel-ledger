@@ -32,11 +32,11 @@ export function centsToDecimal(cents: bigint): string {
   return neg ? `-${s}` : s;
 }
 
-export type Currency = "TWD" | "EUR";
+export type Currency = "TWD" | "EUR" | "KRW";
 
 /** Validate supported ledger currencies; never silently relabel an unknown currency. */
 export function asCurrency(value: string): Currency {
-  if (value === "TWD" || value === "EUR") return value;
+  if (value === "TWD" || value === "EUR" || value === "KRW") return value;
   throw new Error("尚未支援此帳本幣別：" + value);
 }
 
@@ -46,9 +46,17 @@ export function formatMoney(value: bigint | string | number, currency: string = 
   const cents = typeof value === "bigint" ? value : decimalToCents(value);
   const neg = cents < 0n;
   const a = neg ? -cents : cents;
-  const int = (a / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // KRW has no minor units. Round calculated averages half-up to whole won.
+  const whole = code === "KRW" ? (a + 50n) / 100n : a / 100n;
+  const int = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const frac = a % 100n;
-  return `${neg ? "-" : ""}${code === "EUR" ? "€" : "NT$"}${int}${frac === 0n && code === "TWD" ? "" : "." + frac.toString().padStart(2, "0")}`;
+  return `${neg ? "-" : ""}${code === "EUR" ? "€" : code === "KRW" ? "₩" : "NT$"}${int}${code === "KRW" || (frac === 0n && code === "TWD") ? "" : "." + frac.toString().padStart(2, "0")}`;
+}
+
+/** Rate is TWD per 1 KRW, exact decimal string (numeric(20,10)). */
+export function isValidKrwRate(value: string): boolean {
+  const s = value.trim();
+  return /^(?:0|[1-9]\d{0,9})(?:\.\d{1,10})?$/.test(s) && /[1-9]/.test(s);
 }
 
 /** Backwards-compatible TWD formatter. */
@@ -80,4 +88,5 @@ export function ratioPercent(part: bigint, whole: bigint): number {
   if (whole <= 0n) return 0;
   return Number((part * 1000n) / whole) / 10;
 }
+
 

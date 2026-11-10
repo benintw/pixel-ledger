@@ -11,7 +11,7 @@ vi.mock("@tanstack/react-router", () => ({ useBlocker: vi.fn() }));
 afterEach(() => { cleanup(); mocks.insert.mockClear(); window.localStorage.clear(); });
 
 function showForm(currency: string, date = "2026-08-18", time = "12:00") {
-  const ledger = { id: "ledger", name: "帳本", type: "daily", base_currency: currency, timezone: "Europe/Berlin" };
+  const ledger = { id: "ledger", name: "帳本", type: "daily", base_currency: currency, timezone: "Europe/Berlin", default_exchange_rate_to_twd: currency === "KRW" ? "0.024" : null };
   const ctx: LedgerCtx = { ledger, ledgers: [ledger], email: "test@example.test", categories: [{ id: "cat", name: "餐飲", created_at: "" }], methods: [{ id: "pm", name: "現金", created_at: "" }] };
   const initial: TxValues = { description: "午餐", amount: "18.95", date, time, categoryId: "cat", paymentId: "pm", notes: "" };
   const done = vi.fn();
@@ -32,6 +32,19 @@ describe("currency-aware expense writes", () => {
     fireEvent.click(screen.getByRole("button", { name: "記下這筆" }));
     await waitFor(() => expect(done).toHaveBeenCalledOnce());
     expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ original_amount: "18.95", original_currency: "TWD", amount_twd: "18.95", exchange_rate_to_twd: 1 }));
+  });
+  it("sends KRW as an exact integer and lets the database apply its rate snapshot", async () => {
+    const done = showForm("KRW");
+    fireEvent.change(screen.getByLabelText("金額（KRW）"), { target: { value: "10000" } });
+    fireEvent.click(screen.getByRole("button", { name: "記下這筆" }));
+    await waitFor(() => expect(done).toHaveBeenCalledOnce());
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ original_amount: "10000.00", original_currency: "KRW", amount_twd: null, exchange_rate_to_twd: null }));
+  });
+  it("rejects fractional KRW instead of rounding the expense", async () => {
+    showForm("KRW");
+    fireEvent.click(screen.getByRole("button", { name: "記下這筆" }));
+    expect(await screen.findByText("韓元金額請輸入整數。")).toBeInTheDocument();
+    expect(mocks.insert).not.toHaveBeenCalled();
   });
   it("does not save a nonexistent Berlin daylight-saving time", async () => {
     showForm("EUR", "2026-03-29", "02:30");

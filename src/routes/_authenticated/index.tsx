@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { ctxQuery, reportQuery, txListQuery } from "@/lib/ledger-api";
+import { ctxQuery, ledgerTotalQuery, reportQuery, txListQuery } from "@/lib/ledger-api";
 import { formatMoney } from "@/lib/money";
 import { formatDateZh, monthRange, todayIn } from "@/lib/time";
 import { TxList } from "@/components/tx-list";
@@ -26,6 +26,7 @@ function Today() {
   const month = monthRange(today.slice(0, 7));
   const day = useQuery(reportQuery(ctx.ledger.id, today, today));
   const mon = useQuery(reportQuery(ctx.ledger.id, month.from, month.to));
+  const total = useQuery({ ...ledgerTotalQuery(ctx.ledger.id), enabled: ctx.ledger.type === "travel" });
   const recent = useQuery(txListQuery(ctx.ledger.id, tz, { limit: 6 }));
 
   return (
@@ -48,6 +49,10 @@ function Today() {
         {(day.error || mon.error) && <p className="mt-2 text-sm text-destructive">讀取失敗，請重新整理。</p>}
       </section>
 
+      {ctx.ledger.type === "travel" && <section className="pixel-box p-4" aria-live="polite">
+        <h2 className="text-lg">旅遊帳本總支出</h2>
+        {total.data ? <><p className="money text-2xl">{formatMoney(total.data.total, ctx.ledger.base_currency)}</p>{total.data.total_twd !== null && ctx.ledger.base_currency === "KRW" && <p className="text-sm">約 {formatMoney(total.data.total_twd, "TWD")}（各筆匯率加總）</p>}<p className="text-sm">{total.data.count} 筆</p></> : <p className="text-sm">{total.error ? "讀取失敗" : "讀取中…"}</p>}
+      </section>}
       <Link to="/add" className="btn-pixel btn-primary w-full py-4 text-xl">
         <Plus className="h-6 w-6" strokeWidth={3} /> 記一筆
       </Link>
@@ -62,4 +67,5 @@ function Today() {
     </div>
   );
 }
+
 

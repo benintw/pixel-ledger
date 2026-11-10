@@ -11,7 +11,7 @@ describe("ledger currencies", () => {
     expect(formatMoney(10n, "EUR")).toBe("€0.10");
     expect(formatTWD("13608.00")).toBe("NT$13,608");
     expect(formatMoney("9999999999999999.99", "EUR")).toBe("€9,999,999,999,999,999.99");
-    expect(() => asCurrency("KRW")).toThrow();
+    expect(() => asCurrency("USD")).toThrow();
   });
   it("renders EUR breakdowns and chart tooltips without TWD labels", () => {
     const { container } = render(<>

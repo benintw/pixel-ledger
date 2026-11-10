@@ -38,6 +38,7 @@ export type Database = {
       ledgers: {
         Row: {
           base_currency: string
+          default_exchange_rate_to_twd: number | null
           created_at: string
           end_date: string | null
           id: string
@@ -50,6 +51,7 @@ export type Database = {
         }
         Insert: {
           base_currency?: string
+          default_exchange_rate_to_twd?: number | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -62,6 +64,7 @@ export type Database = {
         }
         Update: {
           base_currency?: string
+          default_exchange_rate_to_twd?: number | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -173,6 +176,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ledger_total: { Args: { p_ledger: string }; Returns: Json }
       ensure_my_defaults: { Args: never; Returns: undefined }
       ledger_report: {
         Args: { p_from: string; p_ledger: string; p_to: string }
@@ -311,4 +315,5 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 

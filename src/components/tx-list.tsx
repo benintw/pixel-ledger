@@ -22,7 +22,7 @@ export function TxList({ ctx, items, showDate = true, empty = "還沒有紀錄" 
                   {local.time}・{cat.get(t.category_id) ?? "—"}・{pm.get(t.payment_method_id) ?? "—"}
                 </p>
               </div>
-              <span className="money shrink-0">{formatMoney(t.original_amount, t.original_currency)}</span>
+              <span className="shrink-0 text-right"><span className="money block">{formatMoney(t.original_amount, t.original_currency)}</span>{t.original_currency === "KRW" && t.amount_twd !== null && <span className="text-xs text-muted-foreground">約 {formatMoney(t.amount_twd, "TWD")}</span>}</span>
             </Link>
           </li>
         );
@@ -30,4 +30,5 @@ export function TxList({ ctx, items, showDate = true, empty = "還沒有紀錄" 
     </ul>
   );
 }
+
 
