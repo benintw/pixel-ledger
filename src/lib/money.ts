@@ -90,3 +90,20 @@ export function ratioPercent(part: bigint, whole: bigint): number {
 }
 
 
+
+/** Evaluate addition and subtraction in cents, using only the ledger's currency. */
+export function parseAmountExpression(input: string, currency: Currency = "TWD"): bigint | null {
+  if (input.length > 256) return null;
+  const parts = input.replace(/＋/g, "+").replace(/[－−]/g, "-").split(/([+-])/);
+  const prefix = currency === "KRW" ? /^(?:₩|KRW)\s*/i
+    : currency === "EUR" ? /^(?:€|EUR)\s*/i : /^(?:NT\$|\$|TWD)\s*/i;
+  let total = 0n;
+  for (let i = 0; i < parts.length; i += 2) {
+    const term = (parts[i] ?? "").trim().replace(prefix, "");
+    if (!/^(?:\d+|\d{1,3}(?:[,，]\d{3})+)(?:\.\d{1,2})?$/.test(term)) return null;
+    const amount = decimalToCents(term.replace(/[,，]/g, ""));
+    if (amount > 999999999999999999n || (currency === "KRW" && amount % 100n !== 0n)) return null;
+    total += parts[i - 1] === "-" ? -amount : amount;
+  }
+  return total > 0n && total <= 999999999999999999n ? total : null;
+}

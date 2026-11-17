@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAmountToCents, centsToDecimal, decimalToCents, sumCents } from "@/lib/money";
+import { parseAmountExpression, parseAmountToCents, centsToDecimal, decimalToCents, sumCents } from "@/lib/money";
 import { addDays, isValidDate, monthRange, utcToZoned, zonedToUtc } from "@/lib/time";
 import { buildCsv, csvNumber } from "@/lib/csv";
 
@@ -34,5 +34,20 @@ describe("CSV export", () => {
     const csv = buildCsv(["說明", "金額"], [[{ text: '=1+1,"午餐"' }, { num: "12.50" }]]);
     expect(csv).toBe('\uFEFF"說明","金額"\r\n"\'=1+1,""午餐""",12.50\r\n');
     expect(() => csvNumber("=1+1")).toThrow();
+  });
+});
+
+describe("amount arithmetic", () => {
+  it("uses exact cents and accepts currency symbols and grouped amounts", () => {
+    expect(parseAmountExpression("$440+$25")).toBe(46500n);
+    expect(parseAmountExpression("NT$1,000 − 20.30 + 0.10")).toBe(97980n);
+    expect(parseAmountExpression("€0.10+€0.20", "EUR")).toBe(30n);
+    expect(parseAmountExpression("₩10,000-₩2,000", "KRW")).toBe(800000n);
+  });
+  it("rejects incomplete, mixed-currency, nonpositive and overflowing results", () => {
+    for (const input of ["440+", "440++25", "2*3", "1-2", "2-2", "1 2", "₩200+1", "9999999999999999.99+0.01"]) {
+      expect(parseAmountExpression(input)).toBeNull();
+    }
+    expect(parseAmountExpression("₩1.5+₩1.5", "KRW")).toBeNull();
   });
 });
