@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Field, PixelButton } from "@/components/pixel";
-import { asCurrency, centsToDecimal, parseAmountToCents } from "@/lib/money";
+import { asCurrency, centsToDecimal, formatMoney, parseAmountExpression, type Currency } from "@/lib/money";
 import { isValidDate, isValidTime, zonedToUtc } from "@/lib/time";
 import { friendlyError, type LedgerCtx } from "@/lib/ledger-api";
 
@@ -22,13 +22,13 @@ export const LAST_PAYMENT_KEY = "pixel-ledger:last-payment-method";
 
 type Errors = Partial<Record<keyof TxValues | "form", string>>;
 
-export function validateTx(v: TxValues): Errors {
+export function validateTx(v: TxValues, currency: Currency = "TWD"): Errors {
   const e: Errors = {};
   const d = v.description.trim();
   if (!d) e.description = "請輸入說明。";
   else if (d.length > 100) e.description = "說明最多 100 字。";
   if (!v.amount.trim()) e.amount = "請輸入金額。";
-  else if (!parseAmountToCents(v.amount)) e.amount = "金額必須為大於 0 的數字，最多兩位小數。";
+  else if (parseAmountExpression(v.amount, currency) === null) e.amount = currency === "KRW" ? "韓元金額請輸入整數。" : "請輸入金額或加減算式，結果須大於 0，最多兩位小數。";
   if (!isValidDate(v.date)) e.date = "請選擇日期。";
   if (!isValidTime(v.time)) e.time = "請選擇時間。";
   if (!v.paymentId) e.paymentId = "請選擇付款方式。";
@@ -91,19 +91,20 @@ export function TxForm({
     });
   };
 
+  const currency = asCurrency(ctx.ledger.base_currency);
+  const calculatedAmount = parseAmountExpression(v.amount, currency);
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (busyRef.current) return; // duplicate-submit guard
-    const errs = validateTx(v);
-    if (ctx.ledger.base_currency === "KRW" && parseAmountToCents(v.amount) !== null && parseAmountToCents(v.amount)! % 100n !== 0n) errs.amount = "韓元金額請輸入整數。";
+    const errs = validateTx(v, currency);
     if (ctx.ledger.base_currency === "KRW" && mode === "create" && !ctx.ledger.default_exchange_rate_to_twd) errs.form = "請先至設定填入韓元匯率。";
     setErrors(errs);
     if (Object.keys(errs).length) return;
     busyRef.current = true;
     setBusy(true);
     try {
-      const amount = centsToDecimal(parseAmountToCents(v.amount)!);
-      const currency = asCurrency(ctx.ledger.base_currency);
+      const amount = centsToDecimal(calculatedAmount!);
       const row = {
         description: v.description.trim(),
         category_id: v.categoryId,
@@ -171,6 +172,7 @@ export function TxForm({
           <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">{ctx.ledger.base_currency === "EUR" ? "€" : ctx.ledger.base_currency === "KRW" ? "₩" : "NT$"}</span>
           <input
             id="amount"
+            maxLength={256}
             className="field-pixel money text-xl"
             inputMode={ctx.ledger.base_currency === "KRW" ? "numeric" : "decimal"}
             autoComplete="off"
@@ -179,6 +181,19 @@ export function TxForm({
             aria-invalid={!!errors.amount}
             onChange={(e) => set("amount", e.target.value)}
           />
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {(["+", "-"] as const).map((operator) => (
+            <button key={operator} type="button" className="chip-pixel min-w-11" aria-label={operator === "+" ? "加上金額" : "減去金額"}
+              disabled={busy || !/\d\s*$/.test(v.amount) || v.amount.length >= 256}
+              onClick={() => {
+                set("amount", v.amount + operator);
+                document.getElementById("amount")?.focus();
+              }}>{operator}</button>
+          ))}
+          <output className="text-sm" aria-live="polite">
+            {/[+＋－−-]/.test(v.amount) && calculatedAmount !== null ? `= ${formatMoney(calculatedAmount, currency)}` : "可直接輸入加減"}
+          </output>
         </div>
       </Field>
 
