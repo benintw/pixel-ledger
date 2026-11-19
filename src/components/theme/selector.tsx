@@ -5,7 +5,7 @@ export function ThemeSelector() {
   const { theme, setTheme, storageFailed } = useTheme();
   return <section className="pixel-box space-y-3 p-4" aria-labelledby="appearance-heading">
     <div><h2 id="appearance-heading" className="text-lg">外觀</h2>
-      <p className="mt-1 text-sm text-muted-foreground">三款都是淺色。此裝置會記住選擇，可隨時切換。</p></div>
+      <p className="mt-1 text-sm text-muted-foreground">所有主題都採淺色。此裝置會記住選擇，可隨時切換。</p></div>
     <fieldset className="space-y-2">
       <legend className="sr-only">選擇風格主題</legend>
       {THEMES.map((item) => <label key={item.id} className="theme-option" data-selected={theme === item.id}>

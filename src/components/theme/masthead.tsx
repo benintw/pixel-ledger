@@ -6,5 +6,6 @@ export function ThemeMasthead() {
     <span className="journal-mark" aria-hidden="true"><NotebookPen size={30} strokeWidth={1.5} /></span>
     <div className="min-w-0"><p className="theme-brand">Pixel Ledger</p><p className="theme-tagline">把日子，一筆一筆記下來。</p></div>
     <div className="theme-itachi" aria-hidden="true"><img src="/themes/itachi.webp" alt="" width={360} height={240} decoding="async" /></div>
+    <div className="theme-pig" aria-hidden="true"><img src="/themes/pig.webp" alt="" width={240} height={240} decoding="async" /></div>
   </div>;
 }

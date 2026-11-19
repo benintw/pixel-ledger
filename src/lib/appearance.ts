@@ -4,6 +4,7 @@ export const THEMES = [
   { id: "paper", name: "紙本手帳", description: "橫線紙、手帳裝訂與淡紫便條", color: "#eee7d8" },
   { id: "muji", name: "無印良品風", description: "米白留白、細線與酒紅重點", color: "#f3efe7" },
   { id: "shinobi", name: "火影忍者風", description: "淺色卷軸、橘色與曉組織的鼬", color: "#f1dfbc" },
+  { id: "pig", name: "粉紅小豬", description: "草莓牛奶粉、奶油白與抱手帳的小豬", color: "#fbe7ee" },
 ] as const;
 export type Theme = (typeof THEMES)[number]["id"];
 export const DEFAULT_THEME: Theme = "paper";

@@ -13,9 +13,9 @@ afterEach(() => {
 function show() { return render(<ThemeProvider><ThemeSelector /><ThemeMasthead /></ThemeProvider>); }
 
 describe("light appearance preferences", () => {
-  it("defaults to paper and exposes exactly the approved three light themes", () => {
+  it("defaults to paper and exposes exactly the approved four light themes", () => {
     show();
-    expect(screen.getAllByRole("radio")).toHaveLength(3);
+    expect(screen.getAllByRole("radio")).toHaveLength(4);
     expect(screen.getByRole("radio", { name: /紙本手帳/ })).toBeChecked();
     expect(document.documentElement.dataset["theme"]).toBe("paper");
     expect(screen.queryByText(/深色|暗色/)).not.toBeInTheDocument();
@@ -67,4 +67,14 @@ describe("light appearance preferences", () => {
     expect(container.querySelector(".theme-itachi img")).toHaveAttribute("src", "/themes/itachi.webp");
     expect(screen.getByText("Pixel Ledger")).toBeInTheDocument();
   });
+  it("restores the pink pig theme before hydration and includes its decorative asset", () => {
+    window.localStorage.setItem(THEME_KEY, "pig");
+    window.eval(THEME_INIT_SCRIPT);
+    expect(document.documentElement.dataset["theme"]).toBe("pig");
+    const { container } = show();
+    expect(screen.getByRole("radio", { name: /粉紅小豬/ })).toBeChecked();
+    expect(container.querySelector(".theme-pig img")).toHaveAttribute("src", "/themes/pig.webp");
+    expect(container.querySelector(".theme-pig")).toHaveAttribute("aria-hidden", "true");
+  });
+
 });
