@@ -22,6 +22,7 @@ describe("light appearance preferences", () => {
   });
   it.each(THEMES)("applies and restores $id across a remount", ({ id, name }) => {
     const view = show();
+    if (id === "paper") fireEvent.click(screen.getByRole("radio", { name: /無印良品風/ }));
     fireEvent.click(screen.getByRole("radio", { name: new RegExp(name) }));
     expect(window.localStorage.getItem(THEME_KEY)).toBe(id);
     expect(document.documentElement.dataset["theme"]).toBe(id);
