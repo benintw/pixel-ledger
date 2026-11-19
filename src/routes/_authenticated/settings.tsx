@@ -9,6 +9,7 @@ import { TIMEZONES, utcToZoned } from "@/lib/time";
 import { buildCsv } from "@/lib/csv";
 import { isValidKrwRate } from "@/lib/money";
 import { PageHeader, PixelButton } from "@/components/pixel";
+import { ThemeSelector } from "@/components/theme/selector";
 import { RecurringExpenses } from "@/components/recurring-expenses";
 import { LAST_PAYMENT_KEY } from "@/components/tx-form";
 
@@ -158,6 +159,7 @@ function SettingsPage() {
   return (
     <div className="space-y-4 pt-4">
       <PageHeader title="設定" />
+      <ThemeSelector />
       <section className="pixel-box space-y-2 p-4">
         <h2 className="text-lg">帳號</h2>
         <p className="break-all text-sm">{ctx.email}</p>

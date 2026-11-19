@@ -48,3 +48,13 @@ bun run dev
 部署順序：先套用 `drizzle/migrations/0004_recurring_expenses.sql`，再執行 `drizzle/recurring-cron.sql` 啟用 pg_cron 與排程，最後部署前端。沒有新環境變數，也不需要 service role key。Cron 在 private schema 的函式執行，前端無法呼叫；RLS 與複合外鍵隔離帳號，客戶端只能更新 enabled，不能倒退 next_date。產生交易及推進日期在同一 transaction，行鎖與唯一鍵避免重複。排程紀錄保留 14 天。
 
 驗證：CI 的 `tests/db/recurring.sql` 使用 PostgreSQL 17 測試月末、閏年、時區、冪等、刪除後不重建、補記、暫停／恢復、停止保留交易及 RLS。測試全部回滾。另需人工在 iPhone 驗證淺色版面、分類＋金額無說明送出，以及建立真實固定支出後等待排程產生首筆；可在 Supabase Cron History 查排程狀態。
+
+## 淺色風格主題
+
+設定 → 外觀，可即時切換「紙本手帳」（預設）、「無印良品風」與「火影忍者風」。火影風保留淺色卷軸與橘色按鈕，右上角為曉組織的鼬。此為獨立設計的主題，沒有官方品牌或作品合作關係。
+
+選擇保存在目前瀏覽器／PWA 的 localStorage（`pixel-ledger:appearance`），重新整理與重新開啟後保留，同源分頁也會更新。不跨裝置同步；Safari 與主畫面 PWA 若使用不同儲存空間，需各選一次。無痕模式、清除網站資料或禁止儲存時可能無法保留；即時切換仍可用，畫面會提示。沒有新增資料庫欄位、權限或環境變數。
+
+SSR 一律輸出安全預設值；head 中的固定 allowlist script 在畫面顯示前套用已存主題，避免閃回預設色。三款都固定 light color scheme，財務資料與操作標籤不隨主題改變。裝飾不攔截觸控；鼬使用約 9 KB 的透明 WebP，無新增套件。
+
+`src/test/appearance.test.tsx` 驗證三款切換、儲存／重掛載、跨分頁、非法儲存值、首次顯示與 Safari 儲存失敗處理。發布前跑 TypeScript、Vitest、Vercel build 及既有資料庫測試。iPhone 人工確認：設定依序切換三款，檢查首頁、新增、紀錄、報表；重新開啟 PWA 後保留；窄螢幕無橫向溢出，鼬不遮住標題或按鈕。iOS 主畫面圖示沿用原有 App icon，不隨主題更換。

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 import { Home, List, BarChart3, Settings, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeMasthead } from "@/components/theme/masthead";
 import { ctxQuery } from "@/lib/ledger-api";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -30,11 +31,12 @@ function Layout() {
   return (
     <div className="checker-bg min-h-screen">
       <main className="journal-page safe-top mx-auto max-w-lg px-6 pb-32">
+        <ThemeMasthead />
         <Outlet />
       </main>
       <nav
         aria-label="主選單"
-        className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-border bg-card"
+        className="theme-nav safe-bottom fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-border bg-card"
       >
         <div className="mx-auto grid max-w-lg grid-cols-5 items-end">
           {items.slice(0, 2).map((it) => <NavItem key={it.to} {...it} />)}
@@ -60,7 +62,7 @@ function NavItem({ to, label, icon: Icon }: (typeof items)[number]) {
     <Link
       to={to}
       activeOptions={{ exact: to === "/" }}
-      className="flex min-h-[60px] flex-col items-center justify-center gap-1 font-pixel text-xs text-muted-foreground data-[status=active]:text-foreground data-[status=active]:underline data-[status=active]:decoration-2 data-[status=active]:underline-offset-4"
+      className="theme-nav-item flex min-h-[60px] flex-col items-center justify-center gap-1 font-pixel text-xs text-muted-foreground data-[status=active]:text-foreground data-[status=active]:underline data-[status=active]:decoration-2 data-[status=active]:underline-offset-4"
     >
       <Icon className="h-6 w-6" aria-hidden />
       {label}
