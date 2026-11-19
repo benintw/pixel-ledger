@@ -29,7 +29,7 @@ const items = [
 function Layout() {
   return (
     <div className="checker-bg min-h-screen">
-      <main className="safe-top mx-auto max-w-lg px-4 pb-32">
+      <main className="journal-page safe-top mx-auto max-w-lg px-6 pb-32">
         <Outlet />
       </main>
       <nav

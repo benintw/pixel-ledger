@@ -25,8 +25,7 @@ type Errors = Partial<Record<keyof TxValues | "form", string>>;
 export function validateTx(v: TxValues, currency: Currency = "TWD"): Errors {
   const e: Errors = {};
   const d = v.description.trim();
-  if (!d) e.description = "請輸入說明。";
-  else if (d.length > 100) e.description = "說明最多 100 字。";
+  if (d.length > 100) e.description = "說明最多 100 字。";
   if (!v.amount.trim()) e.amount = "請輸入金額。";
   else if (parseAmountExpression(v.amount, currency) === null) e.amount = currency === "KRW" ? "韓元金額請輸入整數。" : "請輸入金額或加減算式，結果須大於 0，最多兩位小數。";
   if (!isValidDate(v.date)) e.date = "請選擇日期。";
@@ -154,19 +153,6 @@ export function TxForm({
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
-      <Field label="說明" htmlFor="description" error={errors.description}>
-        <input
-          id="description"
-          className="field-pixel"
-          value={v.description}
-          maxLength={100}
-          enterKeyHint="next"
-          placeholder="例如：午餐便當"
-          aria-invalid={!!errors.description}
-          onChange={(e) => set("description", e.target.value)}
-        />
-      </Field>
-
       <Field label={`金額（${ctx.ledger.base_currency}）`} htmlFor="amount" error={errors.amount}>
         <div className="flex items-stretch">
           <span className="flex items-center border-[3px] border-r-0 border-border bg-muted px-3 font-pixel-latin text-xs">{ctx.ledger.base_currency === "EUR" ? "€" : ctx.ledger.base_currency === "KRW" ? "₩" : "NT$"}</span>
@@ -225,6 +211,19 @@ export function TxForm({
             </button>
           ))}
         </div>
+      </Field>
+
+      <Field label="補充說明（選填）" htmlFor="description" error={errors.description}>
+        <input
+          id="description"
+          className="field-pixel"
+          value={v.description}
+          maxLength={100}
+          enterKeyHint="next"
+          placeholder="不填也可以，例如：蛋餅＋豆漿"
+          aria-invalid={!!errors.description}
+          onChange={(e) => set("description", e.target.value)}
+        />
       </Field>
 
       <Field label="備註（選填）" htmlFor="notes" error={errors.notes}>

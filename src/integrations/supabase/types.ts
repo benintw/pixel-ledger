@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      recurring_expenses: {
+        Row: {
+          id: string
+          user_id: string
+          ledger_id: string
+          name: string
+          amount: number
+          currency: string
+          category_id: string
+          payment_method_id: string
+          frequency_months: number
+          start_date: string
+          next_date: string
+          enabled: boolean
+          last_error: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          ledger_id: string
+          name: string
+          amount: number
+          currency: string
+          category_id: string
+          payment_method_id: string
+          frequency_months: number
+          start_date: string
+          enabled?: boolean
+        }
+        Update: { enabled?: boolean }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
