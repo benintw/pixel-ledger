@@ -463,3 +463,59 @@
 @media (prefers-reduced-motion: reduce) {
   .btn-pixel { transition: none; }
 }
+
+/* Strawberry-milk stationery, with a small pig mascot and readable cocoa text. */
+:root[data-theme="pig"] {
+  --background: #fbe7ee;
+  --foreground: #55333e;
+  --card: #fff9f7;
+  --primary: #f4afc3;
+  --primary-foreground: #532b38;
+  --secondary: #f1e5ce;
+  --secondary-foreground: #55333e;
+  --muted: #f6e7ec;
+  --muted-foreground: #805663;
+  --accent: #f6dce5;
+  --border: #bd8596;
+  --ring: #9b4663;
+  --screen: #fce5ed;
+  --screen-foreground: #55333e;
+  --shadow-pixel: 2px 3px 0 #e8bccb66;
+  --shadow-pixel-sm: 1px 2px 0 #dcabbc99;
+  --surface-radius: 15px;
+  --paper-lines: #e9bbcb30;
+  --paper-margin: #e9b2c366;
+  --journal-edge: #ebc7d2;
+  --nav-active: #8b3f59;
+}
+.theme-pig { display: none; }
+[data-theme="pig"] .journal-page::before { display: none; }
+[data-theme="pig"] .journal-mark { display: none; }
+[data-theme="pig"] .theme-masthead {
+  min-height: 112px;
+  padding-right: 88px;
+  border-bottom: 2px dashed #e4bac8;
+}
+[data-theme="pig"] .theme-brand {
+  font-size: clamp(1.15rem, 5.1vw, 1.5rem);
+  color: #80435b;
+}
+[data-theme="pig"] .theme-tagline::after { content: " ♡"; }
+[data-theme="pig"] .theme-pig {
+  display: block;
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  right: -6px;
+  top: 10px;
+  pointer-events: none;
+}
+[data-theme="pig"] .theme-pig img { width: 100%; height: 100%; object-fit: contain; }
+[data-theme="pig"] .pixel-screen { border-top: 3px solid #e999b2; }
+[data-theme="pig"] .btn-primary { border-radius: 22px; }
+[data-theme="pig"] .bar-pixel { background: var(--primary); }
+[data-theme="pig"] .theme-option { border-radius: 12px; }
+.theme-swatch-pig { background: #fff5f8; border-color: #ca91a4; }
+.theme-swatch-pig i { background: #f3dfc3; }
+.theme-swatch-pig i:first-child { background: #efafc4; border-radius: 4px; }
+.theme-swatch-pig i:last-child { background: #e6bbc9; }

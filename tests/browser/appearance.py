@@ -16,7 +16,7 @@ UID = "11111111-1111-4111-8111-111111111111"
 LID = "22222222-2222-4222-8222-222222222222"
 USER = {"id": UID, "aud": "authenticated", "role": "authenticated", "email": "appearance@example.test", "created_at": "2026-01-01T00:00:00Z", "app_metadata": {}, "user_metadata": {}}
 LEDGER = {"id": LID, "user_id": UID, "name": "日常生活", "type": "daily", "base_currency": "TWD", "timezone": "Asia/Taipei", "is_default": True, "default_exchange_rate_to_twd": None}
-THEMES = [("紙本手帳", "paper"), ("無印良品風", "muji"), ("火影忍者風", "shinobi")]
+THEMES = [("紙本手帳", "paper"), ("無印良品風", "muji"), ("火影忍者風", "shinobi"), ("粉紅小豬", "pig")]
 OUTPUT = Path("test-results/appearance")
 
 
@@ -93,13 +93,13 @@ def main() -> None:
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Overflow {width}px {theme} {path}"
                     assert not page.get_by_text("頁面載入失敗", exact=True).count()
                     if path == "/" and width == 390:
-                        if theme == "shinobi":
-                            image = page.locator(".theme-itachi img")
-                            assert image.evaluate("img => img.complete && img.naturalWidth > 0"), "Itachi asset did not load"
+                        if theme in ("shinobi", "pig"):
+                            image = page.locator(".theme-itachi img" if theme == "shinobi" else ".theme-pig img")
+                            assert image.evaluate("img => img.complete && img.naturalWidth > 0"), f"Mascot asset did not load: {theme}"
                         page.screenshot(path=str(OUTPUT / f"{theme}-{width}.png"), full_page=True)
         assert not errors, errors
         browser.close()
-    print("PASS: all 3 themes, persistence, dark-device/light-app, 320/390px x 5 pages, Itachi asset, no page errors")
+    print("PASS: all 4 themes, persistence, dark-device/light-app, 320/390px x 5 pages, mascot assets, no page errors")
 
 
 if __name__ == "__main__":
