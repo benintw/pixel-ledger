@@ -36,7 +36,7 @@ function Today() {
           <p className="font-pixel text-sm text-muted-foreground">{ctx.ledger.name}・{ctx.ledger.base_currency}</p>
           <h1 className="text-xl">{formatDateZh(today)}</h1>
         </div>
-        <img src="/icons/icon-192.png" alt="" width={44} height={44} className="border-[3px] border-border" />
+
       </header>
 
       <section className="pixel-screen p-5" aria-live="polite">

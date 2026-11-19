@@ -220,3 +220,246 @@
     margin-bottom: 1rem;
   }
 }
+
+/* Shared appearance tokens. All variants deliberately stay light. */
+:root {
+  --font-pixel: "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
+  --font-pixel-latin: "Noto Sans TC", system-ui, sans-serif;
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --muted: #eae4d5;
+  --accent: #ded0df;
+  --accent-foreground: var(--foreground);
+  --input: var(--border);
+  --ring: #78608b;
+  --screen: #e0e6cf;
+  --screen-foreground: #343d2d;
+  --surface-radius: 7px;
+  --paper-lines: #af9c7330;
+  --paper-margin: #c78b8538;
+  --journal-edge: #d5cbb7;
+  --nav-active: #60506d;
+}
+:root[data-theme="muji"] {
+  --background: #f3efe7;
+  --foreground: #302d29;
+  --card: #fffcf6;
+  --primary: #78232d;
+  --primary-foreground: #fffaf4;
+  --secondary: #e9e1d4;
+  --secondary-foreground: #302d29;
+  --muted: #eee7dc;
+  --muted-foreground: #686055;
+  --accent: #eee7dc;
+  --border: #cfc5b6;
+  --ring: #78232d;
+  --screen: #eee5d7;
+  --screen-foreground: #302d29;
+  --shadow-pixel: none;
+  --shadow-pixel-sm: none;
+  --surface-radius: 3px;
+  --paper-lines: transparent;
+  --paper-margin: transparent;
+  --journal-edge: transparent;
+  --nav-active: #78232d;
+}
+:root[data-theme="shinobi"] {
+  --background: #f1dfbc;
+  --foreground: #3d3023;
+  --card: #fff4dc;
+  --primary: #ffad4d;
+  --primary-foreground: #382311;
+  --secondary: #e1dfbb;
+  --secondary-foreground: #3d3023;
+  --muted: #ecdfc0;
+  --muted-foreground: #6b573d;
+  --accent: #f3d1a0;
+  --border: #a28659;
+  --ring: #a44e12;
+  --screen: #ede1bd;
+  --screen-foreground: #3d3023;
+  --shadow-pixel: 2px 3px 0 #b7a07866;
+  --shadow-pixel-sm: 1px 2px 0 #b7a07899;
+  --surface-radius: 9px 5px 8px 4px;
+  --paper-lines: #a2865918;
+  --paper-margin: transparent;
+  --journal-edge: #b38d59;
+  --nav-active: #9b4611;
+}
+@layer components {
+  .pixel-box, .pixel-screen, .btn-pixel, .field-pixel {
+    border-radius: var(--surface-radius);
+  }
+  .pixel-screen {
+    box-shadow: none;
+    border-top: 3px solid var(--primary);
+  }
+  .chip-pixel {
+    border-width: 1px;
+    border-radius: var(--surface-radius);
+    cursor: pointer;
+  }
+  .chip-pixel:focus-visible, .theme-option:focus-within {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+  .checker-bg {
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--paper-lines) 27px 28px);
+  }
+  .journal-page {
+    position: relative;
+    isolation: isolate;
+    background:
+      linear-gradient(to right, transparent 15px, var(--paper-margin) 15px 16px, transparent 16px),
+      repeating-linear-gradient(to bottom, transparent 0 27px, var(--paper-lines) 27px 28px), var(--card);
+    border-color: var(--journal-edge);
+  }
+  .journal-page::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    left: 2px;
+    top: 30px;
+    bottom: 0;
+    width: 10px;
+    opacity: .45;
+    background: repeating-linear-gradient(to bottom, transparent 0 28px, #8b7558 28px 31px, transparent 31px 38px);
+    z-index: -1;
+  }
+  .journal-page header {
+    border-color: var(--journal-edge);
+  }
+  .theme-masthead {
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: .65rem;
+    min-height: 96px;
+    padding: 1.1rem 0 .65rem;
+    border-bottom: 1px dashed var(--border);
+  }
+  .journal-mark {
+    color: #706348;
+    background: var(--screen);
+    border: 1px solid var(--border);
+    border-radius: 5px 9px 3px 6px;
+    padding: .4rem;
+    transform: rotate(-5deg);
+    box-shadow: 2px 2px 0 #c8bea7;
+  }
+  .theme-brand {
+    font-family: "Trebuchet MS", var(--font-sans);
+    font-size: clamp(1.2rem, 5.5vw, 1.6rem);
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1.25;
+  }
+  .theme-tagline {
+    margin-top: .25rem;
+    font-size: .7rem;
+    color: var(--muted-foreground);
+  }
+  .theme-itachi { display: none; }
+  .theme-nav { border-top-width: 1px; }
+  .theme-nav-item[data-status="active"] {
+    color: var(--nav-active);
+    background: color-mix(in srgb, var(--secondary) 50%, transparent);
+  }
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-height: 80px;
+    padding: .6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--card);
+  }
+  .theme-option[data-selected="true"] {
+    border-color: var(--ring);
+    box-shadow: inset 0 0 0 1px var(--ring);
+  }
+  .theme-option input { accent-color: var(--ring); flex-shrink: 0; }
+  .theme-check { color: var(--ring); font-weight: 700; }
+  .theme-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 38px;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 7px 5px;
+    border: 1px solid #b7a98f;
+    border-radius: 3px;
+    background: #fff8e9;
+  }
+  .theme-swatch i { display: block; height: 6px; background: #ded0df; }
+  .theme-swatch i:first-child { background: #c3cdaf; }
+  .theme-swatch i:last-child { background: #d2c4ac; height: 2px; }
+  .theme-swatch-muji { background: #faf6ee; }
+  .theme-swatch-muji i:first-child { background: #78232d; }
+  .theme-swatch-muji i { background: #e6ddce; }
+  .theme-swatch-shinobi { background: #fff0d1; }
+  .theme-swatch-shinobi i:first-child { background: #ffad4d; }
+  .theme-swatch-shinobi i { background: #dcdcb5; }
+}
+[data-theme="muji"] .journal-page { box-shadow: none; }
+[data-theme="muji"] .journal-page::before { display: none; }
+[data-theme="muji"] .theme-masthead { border-bottom-style: solid; gap: 0; }
+[data-theme="muji"] .journal-mark { display: none; }
+[data-theme="muji"] .theme-brand { letter-spacing: -.05em; font-family: var(--font-sans); }
+[data-theme="muji"] .pixel-screen { border: 0; border-left: 3px solid var(--primary); }
+[data-theme="muji"] .pixel-box { border-color: #ded6c8; }
+[data-theme="muji"] .bar-pixel { background: var(--primary); border: 0; }
+[data-theme="shinobi"] .journal-page::before {
+  background: linear-gradient(to right,#b78b57,#eed0a0 50%,#a47b4e);
+  top: 20px;
+  bottom: 15px;
+  left: 3px;
+  width: 5px;
+  border: 1px solid #91704b;
+  border-radius: 4px;
+  opacity: .65;
+}
+[data-theme="shinobi"] .theme-masthead {
+  min-height: 112px;
+  padding-right: 74px;
+  border-bottom: 2px solid var(--border);
+}
+[data-theme="shinobi"] .theme-masthead::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  inset-inline: -12px;
+  height: 9px;
+  border: 1px solid #91704b;
+  border-radius: 5px;
+  background: linear-gradient(#a97c48,#eac89a 45%,#ac8050);
+}
+[data-theme="shinobi"] .journal-mark { display: none; }
+[data-theme="shinobi"] .theme-brand { font-style: italic; font-size: clamp(1.15rem, 5.1vw, 1.5rem); }
+[data-theme="shinobi"] .theme-itachi {
+  display: block;
+  position: absolute;
+  right: -8px;
+  top: 15px;
+  width: 84px;
+  height: 96px;
+  overflow: hidden;
+  pointer-events: none;
+}
+[data-theme="shinobi"] .theme-itachi img {
+  position: absolute;
+  width: 168px;
+  max-width: none;
+  height: 112px;
+  left: -42px;
+  top: -7px;
+}
+[data-theme="shinobi"] .btn-primary { border-radius: 18px 9px 17px 10px; }
+[data-theme="shinobi"] .bar-pixel { background: var(--primary); }
+@media (prefers-reduced-motion: reduce) {
+  .btn-pixel { transition: none; }
+}

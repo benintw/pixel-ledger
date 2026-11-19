@@ -1,0 +1,37 @@
+name: Appearance browser tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  appearance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      VITE_SUPABASE_URL: https://pixel-ledger-test.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_test_only_not_a_real_key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: astral-sh/setup-uv@v6
+      - run: bun install --frozen-lockfile
+      - run: uv run --python 3.12 --with playwright==1.56.0 python -m playwright install --with-deps chromium
+      - name: Start test-only frontend
+        run: bun run dev --host 127.0.0.1 --port 5173 > /tmp/pixel-appearance-vite.log 2>&1 &
+      - name: Test mobile theme rendering with mocked Auth and data
+        run: uv run --python 3.12 --with playwright==1.56.0 python tests/browser/appearance.py
+      - name: Vite diagnostics
+        if: failure()
+        run: |
+          if [ -f /tmp/pixel-appearance-vite.log ]; then
+            tail -100 /tmp/pixel-appearance-vite.log
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: appearance-screenshots
+          path: test-results/appearance/
+          if-no-files-found: ignore
+          retention-days: 7
