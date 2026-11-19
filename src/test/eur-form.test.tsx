@@ -20,6 +20,13 @@ function showForm(currency: string, date = "2026-08-18", time = "12:00") {
 }
 
 describe("currency-aware expense writes", () => {
+  it("saves a category-only expense without forcing a duplicate description", async () => {
+    const done = showForm("TWD");
+    fireEvent.change(screen.getByLabelText("補充說明（選填）"), { target: { value: "   " } });
+    fireEvent.click(screen.getByRole("button", { name: "記下這筆" }));
+    await waitFor(() => expect(done).toHaveBeenCalledOnce());
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ description: "", category_id: "cat" }));
+  });
   it("writes exact EUR original amounts without inventing TWD conversion", async () => {
     const done = showForm("EUR");
     expect(screen.getByText("金額（EUR）")).toBeInTheDocument();

@@ -9,6 +9,7 @@ import { TIMEZONES, utcToZoned } from "@/lib/time";
 import { buildCsv } from "@/lib/csv";
 import { isValidKrwRate } from "@/lib/money";
 import { PageHeader, PixelButton } from "@/components/pixel";
+import { RecurringExpenses } from "@/components/recurring-expenses";
 import { LAST_PAYMENT_KEY } from "@/components/tx-form";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -198,6 +199,8 @@ function SettingsPage() {
           {tzOptions.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
       </section>
+
+      <RecurringExpenses key={ctx.ledger.id} ctx={ctx} />
 
       <NameManager title="分類" table="categories" rows={ctx.categories} />
       <NameManager title="付款方式" table="payment_methods" rows={ctx.methods} />

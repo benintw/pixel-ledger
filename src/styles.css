@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Pixel Ledger design system — Game Boy inspired: cream, sage, lavender, charcoal. */
+/* Light paper journal: warm ivory, sage tabs, pencil borders and ruled paper. */
 
 @theme inline {
   --font-sans: "Noto Sans TC", "PingFang TC", "Heiti TC", system-ui, sans-serif;
@@ -39,30 +39,31 @@
 }
 
 :root {
+  color-scheme: light;
   --radius: 0rem;
-  --background: oklch(0.955 0.03 92);
-  --foreground: oklch(0.26 0.012 260);
-  --card: oklch(0.985 0.018 95);
+  --background: #eee7d8;
+  --foreground: #39362f;
+  --card: #fffaf0;
   --card-foreground: oklch(0.26 0.012 260);
   --popover: oklch(0.985 0.018 95);
   --popover-foreground: oklch(0.26 0.012 260);
-  --primary: oklch(0.66 0.085 140);
+  --primary: #b7c5a3;
   --primary-foreground: oklch(0.22 0.012 260);
-  --secondary: oklch(0.82 0.06 300);
+  --secondary: #ded0df;
   --secondary-foreground: oklch(0.22 0.012 260);
   --muted: oklch(0.91 0.03 95);
-  --muted-foreground: oklch(0.45 0.015 260);
+  --muted-foreground: #666052;
   --accent: oklch(0.82 0.06 300);
   --accent-foreground: oklch(0.22 0.012 260);
   --destructive: oklch(0.58 0.17 25);
   --destructive-foreground: oklch(0.985 0.018 95);
-  --border: oklch(0.26 0.012 260);
+  --border: #777461;
   --input: oklch(0.26 0.012 260);
   --ring: oklch(0.6 0.1 300);
   --screen: oklch(0.8 0.07 135);
   --screen-foreground: oklch(0.24 0.03 150);
-  --shadow-pixel: 4px 4px 0 0 var(--border);
-  --shadow-pixel-sm: 2px 2px 0 0 var(--border);
+  --shadow-pixel: 2px 3px 0 #c8bea7;
+  --shadow-pixel-sm: 1px 2px 0 #b6ad98;
 }
 
 @layer base {
@@ -94,13 +95,15 @@
 @layer components {
   .pixel-box {
     background: var(--card);
-    border: 3px solid var(--border);
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
     box-shadow: var(--shadow-pixel);
   }
   .pixel-screen {
     background: var(--screen);
     color: var(--screen-foreground);
-    border: 3px solid var(--border);
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
     box-shadow: inset 3px 3px 0 0 oklch(0.26 0.012 260 / 0.25);
   }
   .font-pixel {
@@ -121,7 +124,8 @@
     gap: 0.5rem;
     min-height: 48px;
     padding: 0.6rem 1rem;
-    border: 3px solid var(--border);
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
     box-shadow: var(--shadow-pixel-sm);
     font-family: var(--font-pixel);
     font-size: 1rem;
@@ -159,12 +163,14 @@
     color: var(--destructive-foreground);
   }
   .field-pixel {
+    min-width: 0;
     width: 100%;
     min-height: 48px;
     padding: 0.6rem 0.75rem;
     background: var(--card);
     color: var(--foreground);
-    border: 3px solid var(--border);
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
     font-family: var(--font-sans);
     font-size: 16px;
     appearance: none;
@@ -200,7 +206,17 @@
     padding-top: env(safe-area-inset-top);
   }
   .checker-bg {
-    background-image: radial-gradient(oklch(0.26 0.012 260 / 0.07) 1px, transparent 1px);
-    background-size: 8px 8px;
+    background-color: var(--background);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, #c8bea730 27px 28px);
+  }
+  .journal-page {
+    background: linear-gradient(to right, transparent 15px, #c78b8538 15px 16px, transparent 16px), var(--card);
+    border-inline: 1px solid #d5cbb7;
+    box-shadow: 0 0 24px #786d5612;
+    min-height: 100dvh;
+  }
+  .journal-page header {
+    border-bottom: 1px dashed #b8ad97;
+    margin-bottom: 1rem;
   }
 }

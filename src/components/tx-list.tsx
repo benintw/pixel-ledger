@@ -16,7 +16,7 @@ export function TxList({ ctx, items, showDate = true, empty = "還沒有紀錄" 
           <li key={t.id}>
             <Link to="/edit/$id" params={{ id: t.id }} className="flex min-h-[56px] items-center justify-between gap-3 py-2.5">
               <div className="min-w-0">
-                <p className="truncate font-semibold">{t.description}</p>
+                <p className="truncate font-semibold">{t.description.trim() || cat.get(t.category_id) || "未分類支出"}</p>
                 <p className="text-xs text-muted-foreground">
                   {showDate ? `${local.date.slice(5).replace("-", "/")} ` : ""}
                   {local.time}・{cat.get(t.category_id) ?? "—"}・{pm.get(t.payment_method_id) ?? "—"}

@@ -100,7 +100,7 @@ function EditPage() {
         <AlertDialogContent className="pixel-box rounded-none">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-pixel">確定刪除？</AlertDialogTitle>
-            <AlertDialogDescription>「{tx.description}」將永久刪除，無法復原。</AlertDialogDescription>
+            <AlertDialogDescription>「{tx.description.trim() || ctx.categories.find((c) => c.id === tx.category_id)?.name || "未分類支出"}」將永久刪除，無法復原。</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="btn-pixel btn-ghost rounded-none">取消</AlertDialogCancel>
